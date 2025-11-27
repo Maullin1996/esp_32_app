@@ -48,7 +48,11 @@ class HomePage extends ConsumerWidget {
         child: Column(
           children: [
             moduleButton(context, "Luces 18 Relés", const Luces18Page()),
-            moduleButton(context, "Temperatura / Agua", const TempPage()),
+            moduleButton(
+              context,
+              "Temperatura / Agua",
+              const TemperaturaPage(),
+            ),
             moduleButton(context, "Humedad de Suelo", const HumedadPage()),
             moduleButton(context, "Tanque (ultrasonido)", const TanquePage()),
           ],

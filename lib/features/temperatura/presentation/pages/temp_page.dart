@@ -1,158 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../devices/presentation/providers/device_providers.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-import '../providers/temp_providers.dart';
-
-class TempPage extends ConsumerStatefulWidget {
-  const TempPage({super.key});
+class TemperaturaPage extends ConsumerStatefulWidget {
+  const TemperaturaPage({super.key});
 
   @override
-  ConsumerState<TempPage> createState() => _TempPageState();
+  ConsumerState<TemperaturaPage> createState() => _TemperaturaPageState();
 }
 
-class _TempPageState extends ConsumerState<TempPage> {
-  final ipController = TextEditingController();
-  final manualController = TextEditingController(text: "40");
-  final minController = TextEditingController(text: "30");
-  final maxController = TextEditingController(text: "35");
+class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
+  double? temperaturaActual;
+  double target = 30.0;
+  bool modoRango = false;
+  double rangoMin = 28.0;
+  double rangoMax = 32.0;
+
+  Future<void> leerEstado() async {
+    final device = ref.read(selectedDeviceProvider);
+    if (device == null) return;
+
+    final url = Uri.http(device.ip, "/status");
+    final res = await http.get(url);
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      setState(() {
+        temperaturaActual = data["temp"];
+      });
+    }
+  }
+
+  Future<void> enviarTarget() async {
+    final device = ref.read(selectedDeviceProvider);
+    if (device == null) return;
+
+    final url = Uri.http(device.ip, "/set-target");
+
+    final res = await http.post(
+      url,
+      body: {
+        "modo": modoRango ? "rango" : "simple",
+        "min": rangoMin.toString(),
+        "max": rangoMax.toString(),
+        "target": target.toString(),
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(tempControllerProvider);
-    final controller = ref.read(tempControllerProvider.notifier);
-
-    ref.listen(tempControllerProvider, (prev, next) {
-      if (next.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(next.error!)));
-      }
-    });
+    final device = ref.watch(selectedDeviceProvider);
+    if (device == null) {
+      return const Scaffold(
+        body: Center(child: Text("⛔ Selecciona un ESP32 primero")),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Control de Temperatura")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // IP
-            TextField(
-              controller: ipController,
-              decoration: const InputDecoration(
-                labelText: "IP del ESP32",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                controller.setIp(ipController.text.trim());
-              },
-              child: const Text("Conectar"),
-            ),
-
-            const SizedBox(height: 20),
-
-            Text(
-              "Temperatura actual: ${state.temperature.toStringAsFixed(2)}°C",
-              style: const TextStyle(fontSize: 22),
-            ),
-            Text(
-              "Resistencia: ${state.heaterOn ? "ENCENDIDA" : "APAGADA"}",
-              style: TextStyle(
-                fontSize: 18,
-                color: state.heaterOn ? Colors.red : Colors.green,
-              ),
-            ),
-
-            const Divider(height: 40),
-
-            // =========================
-            // MODO MANUAL
-            // =========================
-            const Text("Modo Manual", style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: manualController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Temperatura objetivo (°C)",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                final t = double.tryParse(manualController.text) ?? 40;
-                controller.applyManual(t);
-              },
-              child: const Text("Aplicar Modo Manual"),
-            ),
-
-            const Divider(height: 40),
-
-            // =========================
-            // MODO RANGO
-            // =========================
-            const Text("Modo Rango Automático", style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 10),
-
-            Row(
+      appBar: AppBar(title: Text("Temperatura (${device.name})")),
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            temperaturaActual != null
+                ? "Temperatura actual: $temperaturaActual°C"
+                : "Sin datos",
+            style: const TextStyle(fontSize: 22),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: leerEstado,
+            child: const Text("Actualizar temperatura"),
+          ),
+          const Divider(),
+          SwitchListTile(
+            title: const Text("Modo rango"),
+            value: modoRango,
+            onChanged: (v) => setState(() => modoRango = v),
+          ),
+          if (!modoRango)
+            Slider(
+              value: target,
+              min: 10,
+              max: 80,
+              onChanged: (v) => setState(() => target = v),
+            )
+          else
+            Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: minController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Mín (°C)",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                Slider(
+                  value: rangoMin,
+                  min: 10,
+                  max: 80,
+                  onChanged: (v) => setState(() => rangoMin = v),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: maxController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Máx (°C)",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                Slider(
+                  value: rangoMax,
+                  min: 10,
+                  max: 80,
+                  onChanged: (v) => setState(() => rangoMax = v),
                 ),
               ],
             ),
-
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                final mn = double.tryParse(minController.text) ?? 30;
-                final mx = double.tryParse(maxController.text) ?? 35;
-
-                controller.applyRange(mn, mx);
-              },
-              child: const Text("Aplicar Modo Rango"),
-            ),
-
-            const Divider(height: 40),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
-              onPressed: controller.stop,
-              child: const Text("Apagar sistema"),
-            ),
-
-            const SizedBox(height: 20),
-
-            Text(
-              "Modo actual: ${state.mode}",
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
+          ElevatedButton(
+            onPressed: enviarTarget,
+            child: const Text("Enviar configuración"),
+          ),
+        ],
       ),
     );
   }

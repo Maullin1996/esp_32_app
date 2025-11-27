@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/luces_providers.dart';
-import '../widgets/ip_input_card.dart';
-import '../widgets/relay_grid.dart';
+import '../../../devices/presentation/providers/device_providers.dart';
+import 'package:http/http.dart' as http;
 
 class Luces18Page extends ConsumerStatefulWidget {
   const Luces18Page({super.key});
@@ -13,43 +11,63 @@ class Luces18Page extends ConsumerStatefulWidget {
 }
 
 class _Luces18PageState extends ConsumerState<Luces18Page> {
-  final ipController = TextEditingController();
+  List<bool> relays = List.filled(18, false);
 
-  @override
-  void dispose() {
-    ipController.dispose();
-    super.dispose();
+  Future<void> toggleRelay(int index) async {
+    final device = ref.read(selectedDeviceProvider);
+    if (device == null) return;
+
+    final url = Uri.http(device.ip, "/relay", {
+      "id": index.toString(),
+      "state": relays[index] ? "0" : "1",
+    });
+
+    final res = await http.post(url);
+
+    if (res.statusCode == 200) {
+      setState(() => relays[index] = !relays[index]);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(lucesControllerProvider);
-    final controller = ref.read(lucesControllerProvider.notifier);
+    final device = ref.watch(selectedDeviceProvider);
 
-    ref.listen(lucesControllerProvider, (prev, next) {
-      if (next.error != null && next.error != prev?.error) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(next.error!)));
-      }
-    });
+    if (device == null) {
+      return const Scaffold(
+        body: Center(child: Text("⛔ Selecciona un ESP32 primero")),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Luces – 18 relés (WiFi)')),
-      body: Column(
-        children: [
-          IpInputCard(
-            controller: ipController,
-            onApply: () => controller.setIp(ipController.text),
-          ),
-          if (state.isSending) const LinearProgressIndicator(),
-          Expanded(
-            child: RelayGrid(
-              relays: state.relays,
-              onTap: controller.toggleRelay,
+      appBar: AppBar(title: Text("Luces (ESP: ${device.name})")),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(12),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+        ),
+        itemCount: 18,
+        itemBuilder: (_, i) {
+          return GestureDetector(
+            onTap: () => toggleRelay(i),
+            child: Container(
+              decoration: BoxDecoration(
+                color: relays[i]
+                    ? Colors.yellow.shade700
+                    : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(
+                  "Luz ${i + 1}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
