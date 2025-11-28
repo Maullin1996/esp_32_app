@@ -1,5 +1,6 @@
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/temperatura/presentation/pages/temp_page.dart';
+import 'package:esp32_app/features/ventilacion/presentation/pages/vent_page.dart';
 import 'package:esp32_app/ui/widget/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +60,12 @@ class HomePage extends ConsumerWidget {
               icon: Icons.bathroom_sharp,
               title: "Tanque (ultrasonido)",
               page: const TanquePage(),
+            ),
+            CustomCard(
+              ctx: context,
+              icon: Icons.air_outlined,
+              title: "Temperatura (DHT11)",
+              page: const VentilacionPage(),
             ),
           ],
         ),

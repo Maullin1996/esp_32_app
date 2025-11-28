@@ -36,7 +36,7 @@ class CustomCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 30),
+                  style: TextStyle(fontSize: 25),
                   overflow: TextOverflow
                       .ellipsis, // o .fade, .visible según prefieras
                 ),

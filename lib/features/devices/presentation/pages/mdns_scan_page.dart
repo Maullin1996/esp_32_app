@@ -43,6 +43,7 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
               _assignItem("Temperatura", "temperatura", dev),
               _assignItem("Humedad", "humedad", dev),
               _assignItem("Tanque", "tanque", dev),
+              _assignItem("Ventilación", "ventilacion", dev),
             ],
           ),
         );
