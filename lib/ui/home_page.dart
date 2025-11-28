@@ -1,3 +1,4 @@
+import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/temperatura/presentation/pages/temp_page.dart';
 import 'package:esp32_app/features/ventilacion/presentation/pages/vent_page.dart';
@@ -14,10 +15,12 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final assigned = ref.watch(assignedDevicesProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Agregar dispositivos",
+        title: const Text(
+          "Automatizaciones",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -33,39 +36,72 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            CustomCard(
-              ctx: context,
-              icon: Icons.light_mode,
-              title: "Luces 18 Relés",
-              page: const Luces18Page(),
+            AnimatedOpacity(
+              opacity: assigned["luces"] != null ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: (assigned["luces"] != null)
+                  ? CustomCard(
+                      ctx: context,
+                      icon: Icons.light_mode,
+                      title: "Luces 18 Relés",
+                      page: const Luces18Page(),
+                    )
+                  : SizedBox.shrink(),
             ),
-            CustomCard(
-              ctx: context,
-              icon: Icons.thermostat_sharp,
-              title: "Temperatura / Agua",
-              page: const TemperaturaPage(),
+            AnimatedOpacity(
+              opacity: assigned["temperatura"] != null ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: (assigned["temperatura"] != null)
+                  ? CustomCard(
+                      ctx: context,
+                      icon: Icons.thermostat_sharp,
+                      title: "Temperatura / Agua",
+                      page: const TemperaturaPage(),
+                    )
+                  : SizedBox.shrink(),
             ),
-            CustomCard(
-              ctx: context,
-              icon: Icons.grid_4x4_rounded,
-              title: "Humedad de Suelo",
-              page: const HumedadPage(),
+            AnimatedOpacity(
+              opacity: assigned["humedad"] != null ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: (assigned["humedad"] != null)
+                  ? CustomCard(
+                      ctx: context,
+                      icon: Icons.grid_4x4_rounded,
+                      title: "Humedad de Suelo",
+                      page: const HumedadPage(),
+                    )
+                  : SizedBox.shrink(),
             ),
-            CustomCard(
-              ctx: context,
-              icon: Icons.bathroom_sharp,
-              title: "Tanque (ultrasonido)",
-              page: const TanquePage(),
+
+            AnimatedOpacity(
+              opacity: assigned["tanque"] != null ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: (assigned["tanque"] != null)
+                  ? CustomCard(
+                      ctx: context,
+                      icon: Icons.bathroom_sharp,
+                      title: "Tanque (ultrasonido)",
+                      page: const TanquePage(),
+                    )
+                  : SizedBox.shrink(),
             ),
-            CustomCard(
-              ctx: context,
-              icon: Icons.air_outlined,
-              title: "Temperatura (DHT11)",
-              page: const VentilacionPage(),
+
+            AnimatedOpacity(
+              opacity: assigned["ventilacion"] != null ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: (assigned["ventilacion"] != null)
+                  ? CustomCard(
+                      ctx: context,
+                      icon: Icons.air_outlined,
+                      title: "Temperatura (DHT11)",
+                      page: const VentilacionPage(),
+                    )
+                  : SizedBox.shrink(),
             ),
           ],
         ),
