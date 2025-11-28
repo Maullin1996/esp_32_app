@@ -1,9 +1,8 @@
+import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/mdns/mdns_scanner.dart';
-import '../providers/device_providers.dart';
-import '../../domain/entities/device_entity.dart';
 
 class MdnsScanPage extends ConsumerStatefulWidget {
   const MdnsScanPage({super.key});
@@ -31,9 +30,44 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
     });
   }
 
+  void _showAssignDialog(MdnsDiscoveredDevice dev) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text("Asignar ${dev.hostname}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _assignItem("Luces", "luces", dev),
+              _assignItem("Temperatura", "temperatura", dev),
+              _assignItem("Humedad", "humedad", dev),
+              _assignItem("Tanque", "tanque", dev),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _assignItem(String title, String moduleKey, MdnsDiscoveredDevice dev) {
+    return ListTile(
+      title: Text(title),
+      onTap: () {
+        ref.read(assignedDevicesProvider.notifier).assign(moduleKey, dev.ip);
+
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Asignado a $title")));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = ref.read(devicesControllerProvider.notifier);
+    //final controller = ref.read(devicesControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Buscar ESP32 en la red (mDNS)")),
@@ -66,24 +100,9 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
                       title: Text(dev.hostname),
                       subtitle: Text(dev.ip),
                       trailing: ElevatedButton(
-                        child: const Text("Agregar"),
-                        onPressed: () async {
-                          // Detectar tipo según nombre mDNS
-                          final type = _inferType(dev.hostname);
-
-                          final newDevice = DeviceEntity(
-                            name: dev.hostname,
-                            ip: dev.ip, // usamos mDNS directamente
-                            type: type,
-                          );
-
-                          await controller.addDevice(newDevice);
-
-                          if (!mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("${dev.hostname} agregado")),
-                          );
+                        child: const Text("Asignar"),
+                        onPressed: () {
+                          _showAssignDialog(dev);
                         },
                       ),
                     ),
@@ -98,11 +117,11 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
   }
 
   /// Detecta el tipo según el nombre del módulo
-  String _inferType(String hostname) {
-    if (hostname.contains("luces")) return "luces";
-    if (hostname.contains("temp")) return "temperatura";
-    if (hostname.contains("humedad")) return "humedad";
-    if (hostname.contains("tanque")) return "tanque";
-    return "desconocido";
-  }
+  // String _inferType(String hostname) {
+  //   if (hostname.contains("luces")) return "luces";
+  //   if (hostname.contains("temp")) return "temperatura";
+  //   if (hostname.contains("humedad")) return "humedad";
+  //   if (hostname.contains("tanque")) return "tanque";
+  //   return "desconocido";
+  // }
 }

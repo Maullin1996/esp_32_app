@@ -1,8 +1,8 @@
+import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:esp32_app/features/temperatura/presentation/controllers/temp_controller.dart';
 import 'package:esp32_app/features/temperatura/presentation/providers/temp_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../devices/presentation/providers/device_providers.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -14,77 +14,68 @@ class TemperaturaPage extends ConsumerStatefulWidget {
 }
 
 class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
-  late TempController _tempController;
   double? temperaturaActual;
   double target = 30.0;
   bool modoRango = false;
   double rangoMin = 28.0;
   double rangoMax = 32.0;
 
-  Future<void> leerEstado() async {
-    final device = ref.read(selectedDeviceProvider);
-    if (device == null) return;
-
-    final url = Uri.http(device.ip, "/status");
-    final res = await http.get(url);
-
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      setState(() {
-        temperaturaActual = data["temp"];
-      });
-    }
-  }
-
-  Future<void> enviarTarget() async {
-    final device = ref.read(selectedDeviceProvider);
-    if (device == null) return;
-
-    final url = Uri.http(device.ip, "/set-target");
-
-    final res = await http.post(
-      url,
-      body: {
-        "modo": modoRango ? "rango" : "simple",
-        "min": rangoMin.toString(),
-        "max": rangoMax.toString(),
-        "target": target.toString(),
-      },
-    );
-  }
+  late TempController _controller;
 
   @override
   void initState() {
     super.initState();
-    // Guardamos el notifier una sola vez
-    _tempController = ref.read(tempControllerProvider.notifier);
+    _controller = ref.read(tempControllerProvider.notifier);
+
     Future.microtask(() {
-      final device = ref.read(selectedDeviceProvider);
-      if (device != null) {
-        _tempController.setIp(device.ip);
+      final ip = ref.read(assignedDevicesProvider)["temperatura"];
+      if (ip != null) {
+        _controller.setIp(ip);
       }
     });
   }
 
   @override
   void dispose() {
-    // Aquí ya NO usamos ref, sino la instancia guardada
-    _tempController.stopPolling();
+    _controller.stopPolling();
     super.dispose();
+  }
+
+  Future<void> leerEstado() async {
+    final ip = ref.read(assignedDevicesProvider)["temperatura"];
+    if (ip == null) return;
+
+    final url = Uri.http(ip, "/status");
+    final res = await http.get(url);
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      setState(() {
+        temperaturaActual = data["temperature"];
+      });
+    }
+  }
+
+  Future<void> enviarTarget() async {
+    final ip = ref.read(assignedDevicesProvider)["temperatura"];
+    if (ip == null) return;
+
+    final url = Uri.http(ip, "/set_manual");
+    await http.post(url, body: {"target": target.toString()});
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(tempControllerProvider);
-    final device = ref.watch(selectedDeviceProvider);
-    if (device == null) {
+    final ip = ref.watch(assignedDevicesProvider)["temperatura"];
+
+    if (ip == null) {
       return const Scaffold(
-        body: Center(child: Text("⛔ Selecciona un ESP32 primero")),
+        body: Center(child: Text("⛔ No hay ESP32 asignado a Temperatura")),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Temperatura (${device.name})")),
+      appBar: AppBar(title: Text("Temperatura (ESP: $ip)")),
       body: Column(
         children: [
           const SizedBox(height: 20),
@@ -94,41 +85,17 @@ class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
                 : "Sin datos",
             style: const TextStyle(fontSize: 22),
           ),
-          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: leerEstado,
             child: const Text("Actualizar temperatura"),
           ),
           const Divider(),
-          SwitchListTile(
-            title: const Text("Modo rango"),
-            value: modoRango,
-            onChanged: (v) => setState(() => modoRango = v),
+          Slider(
+            value: target,
+            min: 10,
+            max: 80,
+            onChanged: (v) => setState(() => target = v),
           ),
-          if (!modoRango)
-            Slider(
-              value: target,
-              min: 10,
-              max: 80,
-              onChanged: (v) => setState(() => target = v),
-            )
-          else
-            Column(
-              children: [
-                Slider(
-                  value: rangoMin,
-                  min: 10,
-                  max: 80,
-                  onChanged: (v) => setState(() => rangoMin = v),
-                ),
-                Slider(
-                  value: rangoMax,
-                  min: 10,
-                  max: 80,
-                  onChanged: (v) => setState(() => rangoMax = v),
-                ),
-              ],
-            ),
           ElevatedButton(
             onPressed: enviarTarget,
             child: const Text("Enviar configuración"),

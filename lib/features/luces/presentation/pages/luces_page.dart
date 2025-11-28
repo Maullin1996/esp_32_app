@@ -1,6 +1,8 @@
+import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/luces/presentation/controllers/luces_controller.dart';
+import 'package:esp32_app/features/luces/presentation/providers/luces_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../devices/presentation/providers/device_providers.dart';
 import 'package:http/http.dart' as http;
 
 class Luces18Page extends ConsumerStatefulWidget {
@@ -12,12 +14,31 @@ class Luces18Page extends ConsumerStatefulWidget {
 
 class _Luces18PageState extends ConsumerState<Luces18Page> {
   List<bool> relays = List.filled(18, false);
+  late LucesController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ref.read(lucesControllerProvider.notifier);
+
+    Future.microtask(() {
+      final ip = ref.read(assignedDevicesProvider)["luces"];
+      if (ip != null) {
+        _controller.setIp(ip);
+      }
+    });
+  }
 
   Future<void> toggleRelay(int index) async {
-    final device = ref.read(selectedDeviceProvider);
-    if (device == null) return;
+    final ip = ref.read(assignedDevicesProvider)["luces"];
+    if (ip == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No hay ESP32 asignado a Luces")),
+      );
+      return;
+    }
 
-    final url = Uri.http(device.ip, "/relay", {
+    final url = Uri.http(ip, "/relay", {
       "id": index.toString(),
       "state": relays[index] ? "0" : "1",
     });
@@ -31,16 +52,16 @@ class _Luces18PageState extends ConsumerState<Luces18Page> {
 
   @override
   Widget build(BuildContext context) {
-    final device = ref.watch(selectedDeviceProvider);
+    final ip = ref.watch(assignedDevicesProvider)["luces"];
 
-    if (device == null) {
+    if (ip == null) {
       return const Scaffold(
-        body: Center(child: Text("⛔ Selecciona un ESP32 primero")),
+        body: Center(child: Text("⛔ No hay un ESP32 asignado a Luces")),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Luces (ESP: ${device.name})")),
+      appBar: AppBar(title: Text("Luces (ESP: $ip)")),
       body: GridView.builder(
         padding: const EdgeInsets.all(12),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

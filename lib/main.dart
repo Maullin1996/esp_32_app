@@ -17,6 +17,7 @@ class Esp32App extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
+      darkTheme: ThemeData.dark(),
       home: const HomePage(),
     );
   }
