@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:esp32_app/features/humedad/presentation/controllers/humedad_controller.dart';
+import 'package:esp32_app/features/humedad/presentation/providers/humedad_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +14,7 @@ class HumedadPage extends ConsumerStatefulWidget {
 }
 
 class _HumedadPageState extends ConsumerState<HumedadPage> {
+  late HumedadController _humedadController;
   int humedad = 0;
   int target = 40;
 
@@ -39,7 +42,26 @@ class _HumedadPageState extends ConsumerState<HumedadPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _humedadController = ref.read(humedadControllerProvider.notifier);
+    Future.microtask(() {
+      final device = ref.read(selectedDeviceProvider);
+      if (device != null) {
+        _humedadController.setIp(device.ip);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _humedadController.stopPolling();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(humedadControllerProvider);
     final device = ref.watch(selectedDeviceProvider);
     if (device == null) {
       return const Scaffold(

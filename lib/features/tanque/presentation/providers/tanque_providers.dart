@@ -1,7 +1,6 @@
+import 'package:esp32_app/core/providers/http_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
-import '../../../../core/network/http_client.dart';
 import '../../data/datasources/tanque_remote_datasource.dart';
 import '../../data/repositories/tanque_repository_impl.dart';
 import '../../domain/usecases/get_tanque_status_usecase.dart';
@@ -11,10 +10,8 @@ import '../../domain/usecases/stop_tanque_usecase.dart';
 import '../controllers/tanque_controller.dart';
 import '../../domain/entities/tanque_state.dart';
 
-final tanqueHttpClientProvider = Provider((ref) => HttpClient(http.Client()));
-
 final tanqueDatasourceProvider = Provider(
-  (ref) => TanqueRemoteDatasource(ref.read(tanqueHttpClientProvider)),
+  (ref) => TanqueRemoteDatasource(ref.read(httpClientProvider)),
 );
 
 final tanqueRepositoryProvider = Provider(

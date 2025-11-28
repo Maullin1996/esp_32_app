@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:esp32_app/features/tanque/presentation/controllers/tanque_controller.dart';
+import 'package:esp32_app/features/tanque/presentation/providers/tanque_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +14,7 @@ class TanquePage extends ConsumerStatefulWidget {
 }
 
 class _TanquePageState extends ConsumerState<TanquePage> {
+  late TanqueController _tanqueController;
   double distancia = 0;
   double nivel = 0;
   int target = 20;
@@ -42,7 +45,26 @@ class _TanquePageState extends ConsumerState<TanquePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _tanqueController = ref.read(tanqueControllerProvider.notifier);
+    Future.microtask(() {
+      final device = ref.read(selectedDeviceProvider);
+      if (device != null) {
+        _tanqueController.setIp(device.ip);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tanqueController.stopPolling();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(tanqueControllerProvider);
     final device = ref.watch(selectedDeviceProvider);
     if (device == null) {
       return const Scaffold(

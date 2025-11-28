@@ -73,7 +73,7 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
 
                           final newDevice = DeviceEntity(
                             name: dev.hostname,
-                            ip: dev.hostname, // usamos mDNS directamente
+                            ip: dev.ip, // usamos mDNS directamente
                             type: type,
                           );
 

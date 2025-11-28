@@ -1,3 +1,5 @@
+import 'package:esp32_app/features/temperatura/presentation/controllers/temp_controller.dart';
+import 'package:esp32_app/features/temperatura/presentation/providers/temp_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../devices/presentation/providers/device_providers.dart';
@@ -12,6 +14,7 @@ class TemperaturaPage extends ConsumerStatefulWidget {
 }
 
 class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
+  late TempController _tempController;
   double? temperaturaActual;
   double target = 30.0;
   bool modoRango = false;
@@ -51,7 +54,28 @@ class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Guardamos el notifier una sola vez
+    _tempController = ref.read(tempControllerProvider.notifier);
+    Future.microtask(() {
+      final device = ref.read(selectedDeviceProvider);
+      if (device != null) {
+        _tempController.setIp(device.ip);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Aquí ya NO usamos ref, sino la instancia guardada
+    _tempController.stopPolling();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(tempControllerProvider);
     final device = ref.watch(selectedDeviceProvider);
     if (device == null) {
       return const Scaffold(

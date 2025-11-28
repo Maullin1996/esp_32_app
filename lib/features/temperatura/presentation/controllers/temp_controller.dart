@@ -26,7 +26,7 @@ class TempController extends StateNotifier<TempState> {
   void startPolling() {
     _timer?.cancel();
 
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
       final ip = state.espIp.trim();
       if (ip.isEmpty) return;
 
@@ -53,6 +53,7 @@ class TempController extends StateNotifier<TempState> {
 
   Future<void> applyManual(double target) async {
     final ip = state.espIp;
+    if (ip.isEmpty) return;
     state = state.copyWith(isLoading: true, error: null);
 
     final r = await _setManual(ip: ip, target: target);
@@ -61,12 +62,16 @@ class TempController extends StateNotifier<TempState> {
 
     r.when(
       success: (_) {},
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
   }
 
   Future<void> applyRange(double min, double max) async {
     final ip = state.espIp;
+    if (ip.isEmpty) return;
     state = state.copyWith(isLoading: true, error: null);
 
     final r = await _setRange(ip: ip, min: min, max: max);
@@ -75,12 +80,16 @@ class TempController extends StateNotifier<TempState> {
 
     r.when(
       success: (_) {},
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
   }
 
   Future<void> stop() async {
     final ip = state.espIp;
+    if (ip.isEmpty) return;
     state = state.copyWith(isLoading: true, error: null);
 
     final r = await _stop(ip);
@@ -89,13 +98,21 @@ class TempController extends StateNotifier<TempState> {
 
     r.when(
       success: (_) => state = state.copyWith(mode: "off", heaterOn: false),
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
+  }
+
+  void stopPolling() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    stopPolling();
     super.dispose();
   }
 }

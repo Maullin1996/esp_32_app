@@ -26,7 +26,7 @@ class TanqueController extends StateNotifier<TanqueState> {
   void startPolling() {
     _timer?.cancel();
 
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
       final ip = state.espIp.trim();
       if (ip.isEmpty) return;
 
@@ -64,7 +64,10 @@ class TanqueController extends StateNotifier<TanqueState> {
 
     r.when(
       success: (_) {},
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
   }
 
@@ -80,7 +83,10 @@ class TanqueController extends StateNotifier<TanqueState> {
 
     r.when(
       success: (_) {},
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
   }
 
@@ -96,13 +102,21 @@ class TanqueController extends StateNotifier<TanqueState> {
 
     r.when(
       success: (_) => state = state.copyWith(mode: "off", pumpOn: false),
-      failure: (msg) => state = state.copyWith(error: msg),
+      failure: (msg) {
+        state = state.copyWith(error: msg);
+        // No rompas la UI, solo reporta
+      },
     );
+  }
+
+  void stopPolling() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    stopPolling();
     super.dispose();
   }
 }

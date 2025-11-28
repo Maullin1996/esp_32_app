@@ -14,7 +14,13 @@ class HomePage extends ConsumerWidget {
   Widget moduleButton(BuildContext ctx, String title, Widget page) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.push(ctx, MaterialPageRoute(builder: (_) => page));
+        Navigator.push(
+          ctx,
+          MaterialPageRoute(
+            builder: (_) => const TemperaturaPage(),
+            maintainState: false, // 🔥 clave para mañana
+          ),
+        );
       },
       child: Text(title),
     );
