@@ -78,12 +78,12 @@ class _Luces18PageState extends ConsumerState<Luces18Page> {
                 color: relays[i]
                     ? Colors.yellow.shade700
                     : Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
                 child: Text(
                   "Luz ${i + 1}",
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
                 ),
               ),
             ),

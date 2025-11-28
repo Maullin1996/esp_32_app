@@ -2,7 +2,16 @@ import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/mdns/mdns_scanner.dart';
+import 'dart:io';
+
+import 'package:network_info_plus/network_info_plus.dart';
+
+class MdnsDiscoveredDevice {
+  final String hostname;
+  final String ip;
+
+  MdnsDiscoveredDevice({required this.hostname, required this.ip});
+}
 
 class MdnsScanPage extends ConsumerStatefulWidget {
   const MdnsScanPage({super.key});
@@ -15,21 +24,70 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
   bool scanning = false;
   List<MdnsDiscoveredDevice> devices = [];
 
+  // --- Obtiene la IP del celular ---
+
+  Future<String?> _getWifiIp() async {
+    final info = NetworkInfo();
+    final ip = await info.getWifiIP();
+
+    if (ip == null) return null;
+    if (!ip.startsWith("192.168.")) return null;
+
+    return ip;
+  }
+
+  // --- Escanea la red LAN ---
+  Future<List<String>> _scanSubnet(String base) async {
+    List<String> found = [];
+
+    for (int i = 1; i <= 254; i++) {
+      final host = "$base.$i";
+
+      try {
+        final socket = await Socket.connect(
+          host,
+          80,
+          timeout: const Duration(milliseconds: 150),
+        ).timeout(const Duration(milliseconds: 200));
+
+        socket.destroy();
+        found.add(host);
+      } catch (_) {
+        // no responde → ignorar
+      }
+    }
+
+    return found;
+  }
+
+  // --- Acción del botón "Buscar ESP32" ---
   Future<void> scan() async {
     setState(() {
       scanning = true;
       devices = [];
     });
 
-    final scanner = MdnsScanner();
-    final results = await scanner.discoverEsp32();
+    final wifiIp = await _getWifiIp();
+    if (wifiIp == null) {
+      setState(() => scanning = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No se pudo detectar la IP local")),
+      );
+      return;
+    }
+
+    final subnet = wifiIp.substring(0, wifiIp.lastIndexOf("."));
+    final foundIps = await _scanSubnet(subnet);
 
     setState(() {
       scanning = false;
-      devices = results;
+      devices = foundIps
+          .map((ip) => MdnsDiscoveredDevice(hostname: "ESP32 ($ip)", ip: ip))
+          .toList();
     });
   }
 
+  // --- UI para asignar módulos ---
   void _showAssignDialog(MdnsDiscoveredDevice dev) {
     showDialog(
       context: context,
@@ -41,9 +99,9 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
             children: [
               _assignItem("Luces", "luces", dev),
               _assignItem("Temperatura", "temperatura", dev),
-              _assignItem("Humedad", "humedad", dev),
+              _assignItem("Humedad Suelo", "humedad", dev),
               _assignItem("Tanque", "tanque", dev),
-              _assignItem("Ventilación", "ventilacion", dev),
+              _assignItem("Ventilación (DHT11)", "ventilacion", dev),
             ],
           ),
         );
@@ -58,7 +116,6 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
         ref.read(assignedDevicesProvider.notifier).assign(moduleKey, dev.ip);
 
         Navigator.pop(context);
-
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Asignado a $title")));
@@ -66,12 +123,11 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
     );
   }
 
+  // --- UI ---
   @override
   Widget build(BuildContext context) {
-    //final controller = ref.read(devicesControllerProvider.notifier);
-
     return Scaffold(
-      appBar: AppBar(title: const Text("Buscar ESP32 en la red (mDNS)")),
+      appBar: AppBar(title: const Text("Buscar ESP32 en la red (LAN Scan)")),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -116,13 +172,4 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
       ),
     );
   }
-
-  /// Detecta el tipo según el nombre del módulo
-  // String _inferType(String hostname) {
-  //   if (hostname.contains("luces")) return "luces";
-  //   if (hostname.contains("temp")) return "temperatura";
-  //   if (hostname.contains("humedad")) return "humedad";
-  //   if (hostname.contains("tanque")) return "tanque";
-  //   return "desconocido";
-  // }
 }

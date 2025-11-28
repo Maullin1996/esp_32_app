@@ -1,4 +1,6 @@
 import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/presentation/pages/add_device_page.dart';
+import 'package:esp32_app/features/devices/presentation/pages/manage_devices_page.dart';
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/temperatura/presentation/pages/temp_page.dart';
 import 'package:esp32_app/features/ventilacion/presentation/pages/vent_page.dart';
@@ -8,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/humedad/presentation/pages/humedad_page.dart';
 import '../../features/tanque/presentation/pages/tanque_page.dart';
-import '../../features/devices/presentation/pages/devices_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -26,11 +27,20 @@ class HomePage extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.devices),
+            icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const DevicesPage()),
+                MaterialPageRoute(builder: (_) => const AddSimpleDevicePage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ManageDevicesPage()),
               );
             },
           ),

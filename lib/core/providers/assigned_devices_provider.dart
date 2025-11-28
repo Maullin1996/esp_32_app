@@ -23,5 +23,12 @@ class AssignedDevicesController extends StateNotifier<Map<String, String>> {
     storage.save(newState);
   }
 
+  void remove(String module) {
+    final newState = {...state};
+    newState.remove(module);
+    state = newState;
+    storage.save(newState);
+  }
+
   String? getIp(String module) => state[module];
 }
