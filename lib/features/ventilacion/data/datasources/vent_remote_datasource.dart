@@ -10,13 +10,15 @@ class VentRemoteDatasource {
 
   Future<http.Response> getStatus(String ip) => client.get(_u(ip, "/status"));
 
-  Future<http.Response> setManual(String ip, double t) =>
-      client.post(_u(ip, "/set_manual", {"target": t.toString()}));
-
   Future<http.Response> setRange(String ip, double min, double max) =>
       client.post(
         _u(ip, "/set_range", {"min": min.toString(), "max": max.toString()}),
       );
 
-  Future<http.Response> stop(String ip) => client.post(_u(ip, "/stop"));
+  Future<http.Response> autoOn(String ip) => client.post(_u(ip, "/auto_on"));
+
+  Future<http.Response> autoOff(String ip) => client.post(_u(ip, "/auto_off"));
+
+  Future<http.Response> fanManual(String ip, bool on) =>
+      client.post(_u(ip, "/fan_manual", {"state": on ? "1" : "0"}));
 }

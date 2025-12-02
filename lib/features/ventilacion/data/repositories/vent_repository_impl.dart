@@ -20,27 +20,12 @@ class VentRepositoryImpl implements VentRepository {
         VentState(
           espIp: ip,
           temperature: (json["temperature"] ?? 0).toDouble(),
-          mode: json["mode"] ?? "off",
-          manualTarget: (json["target"] ?? 28).toDouble(),
           rangeMin: (json["range_min"] ?? 24).toDouble(),
           rangeMax: (json["range_max"] ?? 28).toDouble(),
           fanOn: json["fan"] == 1,
+          autoEnabled: json["auto"] == 1,
         ),
       );
-    } catch (e) {
-      return Failure(e.toString());
-    }
-  }
-
-  @override
-  Future<Result<void>> setManual(String ip, double target) async {
-    try {
-      final r = await remote
-          .setManual(ip, target)
-          .timeout(const Duration(seconds: 2));
-      return r.statusCode == 200
-          ? const Success(null)
-          : Failure("HTTP ${r.statusCode}");
     } catch (e) {
       return Failure(e.toString());
     }
@@ -61,9 +46,24 @@ class VentRepositoryImpl implements VentRepository {
   }
 
   @override
-  Future<Result<void>> stop(String ip) async {
+  Future<Result<void>> setAuto(String ip, bool enabled) async {
     try {
-      final r = await remote.stop(ip).timeout(const Duration(seconds: 2));
+      final r = await (enabled ? remote.autoOn(ip) : remote.autoOff(ip))
+          .timeout(const Duration(seconds: 2));
+      return r.statusCode == 200
+          ? const Success(null)
+          : Failure("HTTP ${r.statusCode}");
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
+  @override
+  Future<Result<void>> setFanManual(String ip, bool on) async {
+    try {
+      final r = await remote
+          .fanManual(ip, on)
+          .timeout(const Duration(seconds: 2));
       return r.statusCode == 200
           ? const Success(null)
           : Failure("HTTP ${r.statusCode}");

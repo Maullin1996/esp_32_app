@@ -1,5 +1,4 @@
 import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
-import 'package:esp32_app/features/ventilacion/presentation/controllers/vent_controller.dart';
 import 'package:esp32_app/features/ventilacion/presentation/providers/vent_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,92 +11,175 @@ class VentilacionPage extends ConsumerStatefulWidget {
 }
 
 class _VentilacionPageState extends ConsumerState<VentilacionPage> {
-  late VentController _controller;
+  bool _initialized = false;
+  double _newMin = 24;
+  double _newMax = 28;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    _controller = ref.read(ventControllerProvider.notifier);
+    if (!_initialized) {
+      _initialized = true;
 
-    Future.microtask(() {
-      final ip = ref.read(assignedDevicesProvider)["ventilacion"];
-      if (ip != null) {
-        _controller.setIp(ip);
-      }
-    });
-  }
+      Future(() {
+        if (!mounted) return;
 
-  @override
-  void dispose() {
-    _controller.stopPolling();
-    super.dispose();
+        final ip = ref.read(assignedDevicesProvider)["ventilacion"];
+        if (ip != null) {
+          ref.read(ventControllerProvider.notifier).setIp(ip);
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(ventControllerProvider);
-    final ip = ref.watch(assignedDevicesProvider)["ventilacion"];
+    final vent = ref.watch(ventControllerProvider);
+    final controller = ref.read(ventControllerProvider.notifier);
 
-    if (ip == null) {
+    final ip = ref.watch(assignedDevicesProvider)["ventilacion"];
+    if (ip == null || vent.espIp.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("⛔ No hay ESP32 asignado a Ventilación")),
       );
     }
+
+    // Inicializar sliders una sola vez según el estado remoto
+    _newMin = _newMin == 24 ? vent.rangeMin : _newMin;
+    _newMax = _newMax == 28 ? vent.rangeMax : _newMax;
 
     return Scaffold(
       appBar: AppBar(title: Text("Ventilación (ESP: $ip)")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ---- Indicadores ----
             Text(
-              "Temperatura: ${state.temperature} °C",
+              "🌡 Temperatura: ${vent.temperature.toStringAsFixed(1)}°C",
               style: const TextStyle(fontSize: 22),
             ),
+            const SizedBox(height: 8),
             Text(
-              "Ventilador: ${state.fanOn ? "ENCENDIDO" : "APAGADO"}",
+              "Rango actual: "
+              "${vent.rangeMin.toStringAsFixed(1)}°C – "
+              "${vent.rangeMax.toStringAsFixed(1)}°C",
+            ),
+            Text("Sensado: ${vent.autoEnabled ? "Activado" : "Desactivado"}"),
+            Text(
+              "Aire acondicionado: "
+              "${vent.fanOn ? "💨 Encendido" : "⛔ Apagado"}",
               style: TextStyle(
-                color: state.fanOn ? Colors.green : Colors.red,
-                fontSize: 18,
+                color: vent.fanOn ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (vent.error != null)
+              Text(
+                "Error: ${vent.error}",
+                style: const TextStyle(color: Colors.red),
+              ),
+
+            const Divider(height: 32),
+
+            // ---- Configuración rango ----
+            const Text(
+              "Configurar rango de temperatura",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+
+            Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
+            Slider(
+              value: _newMin,
+              min: 10,
+              max: _newMax - 1,
+              onChanged: (v) {
+                setState(() {
+                  _newMin = v;
+                  if (_newMax <= _newMin) _newMax = _newMin + 1;
+                });
+              },
+            ),
+
+            Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
+            Slider(
+              value: _newMax,
+              min: _newMin + 1,
+              max: 50,
+              onChanged: (v) {
+                setState(() {
+                  _newMax = v;
+                  if (_newMax <= _newMin) _newMin = _newMax - 1;
+                });
+              },
+            ),
+
+            Center(
+              child: ElevatedButton(
+                onPressed: () => controller.applyRange(_newMin, _newMax),
+                child: const Text("Guardar rango"),
               ),
             ),
 
-            const Divider(height: 40),
+            const SizedBox(height: 24),
 
-            const Text("Modo Manual", style: TextStyle(fontSize: 18)),
-            Slider(
-              min: 15,
-              max: 40,
-              value: state.manualTarget,
-              onChanged: (v) => _controller.applyManual(v),
+            // ---- Botón de sensado ----
+            Center(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: vent.autoEnabled ? Colors.red : Colors.green,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 10,
+                  ),
+                ),
+                onPressed: controller.toggleAuto,
+                icon: Icon(
+                  vent.autoEnabled ? Icons.pause_circle : Icons.play_circle,
+                  size: 28,
+                ),
+                label: Text(
+                  vent.autoEnabled ? "Desactivar sensado" : "Activar sensado",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
 
-            const Divider(),
+            const SizedBox(height: 16),
 
-            const Text("Modo Rango", style: TextStyle(fontSize: 18)),
-            Text("Mínimo: ${state.rangeMin}"),
-            Slider(
-              min: 15,
-              max: 40,
-              value: state.rangeMin,
-              onChanged: (v) => _controller.applyRange(v, state.rangeMax),
-            ),
-
-            Text("Máximo: ${state.rangeMax}"),
-            Slider(
-              min: 15,
-              max: 40,
-              value: state.rangeMax,
-              onChanged: (v) => _controller.applyRange(state.rangeMin, v),
-            ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () => _controller.stop(),
-              child: const Text("Detener"),
-            ),
+            // ---- Botón manual AC (solo si auto OFF) ----
+            if (!vent.autoEnabled)
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: vent.fanOn ? Colors.orange : Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                  ),
+                  onPressed: controller.toggleFanManual,
+                  icon: Icon(
+                    vent.fanOn ? Icons.power_settings_new : Icons.ac_unit,
+                    size: 26,
+                  ),
+                  label: Text(
+                    vent.fanOn
+                        ? "Apagar aire acondicionado"
+                        : "Encender aire acondicionado",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

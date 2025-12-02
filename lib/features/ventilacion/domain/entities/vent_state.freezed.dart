@@ -23,11 +23,10 @@ VentState _$VentStateFromJson(Map<String, dynamic> json) {
 mixin _$VentState {
   String get espIp => throw _privateConstructorUsedError;
   double get temperature => throw _privateConstructorUsedError;
-  String get mode => throw _privateConstructorUsedError;
-  double get manualTarget => throw _privateConstructorUsedError;
   double get rangeMin => throw _privateConstructorUsedError;
   double get rangeMax => throw _privateConstructorUsedError;
   bool get fanOn => throw _privateConstructorUsedError;
+  bool get autoEnabled => throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
 
@@ -49,11 +48,10 @@ abstract class $VentStateCopyWith<$Res> {
   $Res call({
     String espIp,
     double temperature,
-    String mode,
-    double manualTarget,
     double rangeMin,
     double rangeMax,
     bool fanOn,
+    bool autoEnabled,
     bool isLoading,
     String? error,
   });
@@ -76,11 +74,10 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
   $Res call({
     Object? espIp = null,
     Object? temperature = null,
-    Object? mode = null,
-    Object? manualTarget = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
     Object? fanOn = null,
+    Object? autoEnabled = null,
     Object? isLoading = null,
     Object? error = freezed,
   }) {
@@ -94,14 +91,6 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
                 ? _value.temperature
                 : temperature // ignore: cast_nullable_to_non_nullable
                       as double,
-            mode: null == mode
-                ? _value.mode
-                : mode // ignore: cast_nullable_to_non_nullable
-                      as String,
-            manualTarget: null == manualTarget
-                ? _value.manualTarget
-                : manualTarget // ignore: cast_nullable_to_non_nullable
-                      as double,
             rangeMin: null == rangeMin
                 ? _value.rangeMin
                 : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -113,6 +102,10 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
             fanOn: null == fanOn
                 ? _value.fanOn
                 : fanOn // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            autoEnabled: null == autoEnabled
+                ? _value.autoEnabled
+                : autoEnabled // ignore: cast_nullable_to_non_nullable
                       as bool,
             isLoading: null == isLoading
                 ? _value.isLoading
@@ -140,11 +133,10 @@ abstract class _$$VentStateImplCopyWith<$Res>
   $Res call({
     String espIp,
     double temperature,
-    String mode,
-    double manualTarget,
     double rangeMin,
     double rangeMax,
     bool fanOn,
+    bool autoEnabled,
     bool isLoading,
     String? error,
   });
@@ -166,11 +158,10 @@ class __$$VentStateImplCopyWithImpl<$Res>
   $Res call({
     Object? espIp = null,
     Object? temperature = null,
-    Object? mode = null,
-    Object? manualTarget = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
     Object? fanOn = null,
+    Object? autoEnabled = null,
     Object? isLoading = null,
     Object? error = freezed,
   }) {
@@ -184,14 +175,6 @@ class __$$VentStateImplCopyWithImpl<$Res>
             ? _value.temperature
             : temperature // ignore: cast_nullable_to_non_nullable
                   as double,
-        mode: null == mode
-            ? _value.mode
-            : mode // ignore: cast_nullable_to_non_nullable
-                  as String,
-        manualTarget: null == manualTarget
-            ? _value.manualTarget
-            : manualTarget // ignore: cast_nullable_to_non_nullable
-                  as double,
         rangeMin: null == rangeMin
             ? _value.rangeMin
             : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -203,6 +186,10 @@ class __$$VentStateImplCopyWithImpl<$Res>
         fanOn: null == fanOn
             ? _value.fanOn
             : fanOn // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        autoEnabled: null == autoEnabled
+            ? _value.autoEnabled
+            : autoEnabled // ignore: cast_nullable_to_non_nullable
                   as bool,
         isLoading: null == isLoading
             ? _value.isLoading
@@ -223,11 +210,10 @@ class _$VentStateImpl implements _VentState {
   const _$VentStateImpl({
     this.espIp = '',
     this.temperature = 0.0,
-    this.mode = "off",
-    this.manualTarget = 28.0,
     this.rangeMin = 24.0,
     this.rangeMax = 28.0,
     this.fanOn = false,
+    this.autoEnabled = false,
     this.isLoading = false,
     this.error,
   });
@@ -243,12 +229,6 @@ class _$VentStateImpl implements _VentState {
   final double temperature;
   @override
   @JsonKey()
-  final String mode;
-  @override
-  @JsonKey()
-  final double manualTarget;
-  @override
-  @JsonKey()
   final double rangeMin;
   @override
   @JsonKey()
@@ -258,13 +238,16 @@ class _$VentStateImpl implements _VentState {
   final bool fanOn;
   @override
   @JsonKey()
+  final bool autoEnabled;
+  @override
+  @JsonKey()
   final bool isLoading;
   @override
   final String? error;
 
   @override
   String toString() {
-    return 'VentState(espIp: $espIp, temperature: $temperature, mode: $mode, manualTarget: $manualTarget, rangeMin: $rangeMin, rangeMax: $rangeMax, fanOn: $fanOn, isLoading: $isLoading, error: $error)';
+    return 'VentState(espIp: $espIp, temperature: $temperature, rangeMin: $rangeMin, rangeMax: $rangeMax, fanOn: $fanOn, autoEnabled: $autoEnabled, isLoading: $isLoading, error: $error)';
   }
 
   @override
@@ -275,14 +258,13 @@ class _$VentStateImpl implements _VentState {
             (identical(other.espIp, espIp) || other.espIp == espIp) &&
             (identical(other.temperature, temperature) ||
                 other.temperature == temperature) &&
-            (identical(other.mode, mode) || other.mode == mode) &&
-            (identical(other.manualTarget, manualTarget) ||
-                other.manualTarget == manualTarget) &&
             (identical(other.rangeMin, rangeMin) ||
                 other.rangeMin == rangeMin) &&
             (identical(other.rangeMax, rangeMax) ||
                 other.rangeMax == rangeMax) &&
             (identical(other.fanOn, fanOn) || other.fanOn == fanOn) &&
+            (identical(other.autoEnabled, autoEnabled) ||
+                other.autoEnabled == autoEnabled) &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
             (identical(other.error, error) || other.error == error));
@@ -294,11 +276,10 @@ class _$VentStateImpl implements _VentState {
     runtimeType,
     espIp,
     temperature,
-    mode,
-    manualTarget,
     rangeMin,
     rangeMax,
     fanOn,
+    autoEnabled,
     isLoading,
     error,
   );
@@ -321,11 +302,10 @@ abstract class _VentState implements VentState {
   const factory _VentState({
     final String espIp,
     final double temperature,
-    final String mode,
-    final double manualTarget,
     final double rangeMin,
     final double rangeMax,
     final bool fanOn,
+    final bool autoEnabled,
     final bool isLoading,
     final String? error,
   }) = _$VentStateImpl;
@@ -338,15 +318,13 @@ abstract class _VentState implements VentState {
   @override
   double get temperature;
   @override
-  String get mode;
-  @override
-  double get manualTarget;
-  @override
   double get rangeMin;
   @override
   double get rangeMax;
   @override
   bool get fanOn;
+  @override
+  bool get autoEnabled;
   @override
   bool get isLoading;
   @override
