@@ -1,3 +1,4 @@
+import 'package:esp32_app/core/mdns/mdns_scanner.dart';
 import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,13 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 
 import 'package:network_info_plus/network_info_plus.dart';
-
-class MdnsDiscoveredDevice {
-  final String hostname;
-  final String ip;
-
-  MdnsDiscoveredDevice({required this.hostname, required this.ip});
-}
 
 class MdnsScanPage extends ConsumerStatefulWidget {
   const MdnsScanPage({super.key});
@@ -82,7 +76,10 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
     setState(() {
       scanning = false;
       devices = foundIps
-          .map((ip) => MdnsDiscoveredDevice(hostname: "ESP32 ($ip)", ip: ip))
+          .map(
+            (ip) =>
+                MdnsDiscoveredDevice(hostname: "ESP32 ($ip)", ip: ip, port: 80),
+          )
           .toList();
     });
   }

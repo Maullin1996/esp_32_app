@@ -1,10 +1,7 @@
 import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
-import 'package:esp32_app/features/temperatura/presentation/controllers/temp_controller.dart';
 import 'package:esp32_app/features/temperatura/presentation/providers/temp_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class TemperaturaPage extends ConsumerStatefulWidget {
   const TemperaturaPage({super.key});
@@ -14,93 +11,148 @@ class TemperaturaPage extends ConsumerStatefulWidget {
 }
 
 class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
-  double? temperaturaActual;
-  double target = 30.0;
-  bool modoRango = false;
-  double rangoMin = 28.0;
-  double rangoMax = 32.0;
-
-  late TempController _controller;
+  bool _initialized = false;
+  double _newMin = 30;
+  double _newMax = 35;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = ref.read(tempControllerProvider.notifier);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    Future.microtask(() {
-      final ip = ref.read(assignedDevicesProvider)["temperatura"];
-      if (ip != null) {
-        _controller.setIp(ip);
-      }
-    });
-  }
+    if (!_initialized) {
+      _initialized = true;
 
-  @override
-  void dispose() {
-    _controller.stopPolling();
-    super.dispose();
-  }
+      Future(() {
+        if (!mounted) return;
 
-  Future<void> leerEstado() async {
-    final ip = ref.read(assignedDevicesProvider)["temperatura"];
-    if (ip == null) return;
-
-    final url = Uri.http(ip, "/status");
-    final res = await http.get(url);
-
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      setState(() {
-        temperaturaActual = data["temperature"];
+        final ip = ref.read(assignedDevicesProvider)["temperatura"];
+        if (ip != null) {
+          ref.read(tempControllerProvider.notifier).setIp(ip);
+        }
       });
     }
   }
 
-  Future<void> enviarTarget() async {
-    final ip = ref.read(assignedDevicesProvider)["temperatura"];
-    if (ip == null) return;
-
-    final url = Uri.http(ip, "/set_manual");
-    await http.post(url, body: {"target": target.toString()});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final ip = ref.watch(assignedDevicesProvider)["temperatura"];
+    final temp = ref.watch(tempControllerProvider);
+    final controller = ref.read(tempControllerProvider.notifier);
 
-    if (ip == null) {
+    if (temp.espIp.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("⛔ No hay ESP32 asignado a Temperatura")),
       );
     }
 
+    // Sincroniza sliders con estado inicial la primera vez
+    _newMin = _newMin == 30 ? temp.rangeMin : _newMin;
+    _newMax = _newMax == 35 ? temp.rangeMax : _newMax;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Temperatura (ESP: $ip)")),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            temperaturaActual != null
-                ? "Temperatura actual: $temperaturaActual°C"
-                : "Sin datos",
-            style: const TextStyle(fontSize: 22),
-          ),
-          ElevatedButton(
-            onPressed: leerEstado,
-            child: const Text("Actualizar temperatura"),
-          ),
-          const Divider(),
-          Slider(
-            value: target,
-            min: 10,
-            max: 80,
-            onChanged: (v) => setState(() => target = v),
-          ),
-          ElevatedButton(
-            onPressed: enviarTarget,
-            child: const Text("Enviar configuración"),
-          ),
-        ],
+      appBar: AppBar(title: Text("Temperatura (ESP: ${temp.espIp})")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "🌡 Temperatura: ${temp.temperature.toStringAsFixed(1)}°C",
+              style: const TextStyle(fontSize: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Rango actual: ${temp.rangeMin.toStringAsFixed(1)}°C - "
+              "${temp.rangeMax.toStringAsFixed(1)}°C",
+            ),
+            Text("Sensado: ${temp.autoEnabled ? "Activado" : "Desactivado"}"),
+            Text("Heater: ${temp.heaterOn ? "🔥 Encendido" : "❄ Apagado"}"),
+            if (temp.forcedOff)
+              const Text(
+                "Apagado total activo (force off)",
+                style: TextStyle(color: Colors.red),
+              ),
+            if (temp.error != null)
+              Text(
+                "Error: ${temp.error}",
+                style: const TextStyle(color: Colors.red),
+              ),
+
+            const Divider(height: 32),
+
+            const Text("Configurar rango de temperatura"),
+            const SizedBox(height: 8),
+
+            Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
+            Slider(
+              value: _newMin,
+              min: 5,
+              max: _newMax - 1,
+              onChanged: (v) {
+                setState(() {
+                  _newMin = v;
+                  if (_newMax <= _newMin) {
+                    _newMax = _newMin + 1;
+                  }
+                });
+              },
+            ),
+
+            Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
+            Slider(
+              value: _newMax,
+              min: _newMin + 1,
+              max: 80,
+              onChanged: (v) {
+                setState(() {
+                  _newMax = v;
+                  if (_newMax <= _newMin) {
+                    _newMin = _newMax - 1;
+                  }
+                });
+              },
+            ),
+
+            Center(
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.blue),
+                ),
+                onPressed: temp.isLoading
+                    ? null
+                    : () => controller.applyRange(_newMin, _newMax),
+                child: const Text("Guardar rango"),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Center(
+              child: ElevatedButton.icon(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    temp.autoEnabled ? Colors.red : Colors.green,
+                  ),
+                ),
+                onPressed: controller.toggleAuto,
+                icon: Icon(
+                  temp.autoEnabled ? Icons.pause_circle : Icons.play_circle,
+                ),
+                label: Text(
+                  temp.autoEnabled ? "Desactivar sensado" : "Activar sensado",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // ElevatedButton(
+            //   onPressed: controller.forceOff,
+            //   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            //   child: const Text("Apagado total"),
+            // ),
+          ],
+        ),
       ),
     );
   }

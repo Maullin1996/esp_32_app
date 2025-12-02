@@ -15,17 +15,24 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
+TempState _$TempStateFromJson(Map<String, dynamic> json) {
+  return _TempState.fromJson(json);
+}
+
 /// @nodoc
 mixin _$TempState {
   String get espIp => throw _privateConstructorUsedError;
   double get temperature => throw _privateConstructorUsedError;
-  String get mode => throw _privateConstructorUsedError;
-  double get manualTarget => throw _privateConstructorUsedError;
   double get rangeMin => throw _privateConstructorUsedError;
   double get rangeMax => throw _privateConstructorUsedError;
+  bool get autoEnabled => throw _privateConstructorUsedError;
+  bool get forcedOff => throw _privateConstructorUsedError;
   bool get heaterOn => throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
+
+  /// Serializes this TempState to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of TempState
   /// with the given fields replaced by the non-null parameter values.
@@ -42,10 +49,10 @@ abstract class $TempStateCopyWith<$Res> {
   $Res call({
     String espIp,
     double temperature,
-    String mode,
-    double manualTarget,
     double rangeMin,
     double rangeMax,
+    bool autoEnabled,
+    bool forcedOff,
     bool heaterOn,
     bool isLoading,
     String? error,
@@ -69,10 +76,10 @@ class _$TempStateCopyWithImpl<$Res, $Val extends TempState>
   $Res call({
     Object? espIp = null,
     Object? temperature = null,
-    Object? mode = null,
-    Object? manualTarget = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
+    Object? autoEnabled = null,
+    Object? forcedOff = null,
     Object? heaterOn = null,
     Object? isLoading = null,
     Object? error = freezed,
@@ -87,14 +94,6 @@ class _$TempStateCopyWithImpl<$Res, $Val extends TempState>
                 ? _value.temperature
                 : temperature // ignore: cast_nullable_to_non_nullable
                       as double,
-            mode: null == mode
-                ? _value.mode
-                : mode // ignore: cast_nullable_to_non_nullable
-                      as String,
-            manualTarget: null == manualTarget
-                ? _value.manualTarget
-                : manualTarget // ignore: cast_nullable_to_non_nullable
-                      as double,
             rangeMin: null == rangeMin
                 ? _value.rangeMin
                 : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -103,6 +102,14 @@ class _$TempStateCopyWithImpl<$Res, $Val extends TempState>
                 ? _value.rangeMax
                 : rangeMax // ignore: cast_nullable_to_non_nullable
                       as double,
+            autoEnabled: null == autoEnabled
+                ? _value.autoEnabled
+                : autoEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            forcedOff: null == forcedOff
+                ? _value.forcedOff
+                : forcedOff // ignore: cast_nullable_to_non_nullable
+                      as bool,
             heaterOn: null == heaterOn
                 ? _value.heaterOn
                 : heaterOn // ignore: cast_nullable_to_non_nullable
@@ -133,10 +140,10 @@ abstract class _$$TempStateImplCopyWith<$Res>
   $Res call({
     String espIp,
     double temperature,
-    String mode,
-    double manualTarget,
     double rangeMin,
     double rangeMax,
+    bool autoEnabled,
+    bool forcedOff,
     bool heaterOn,
     bool isLoading,
     String? error,
@@ -159,10 +166,10 @@ class __$$TempStateImplCopyWithImpl<$Res>
   $Res call({
     Object? espIp = null,
     Object? temperature = null,
-    Object? mode = null,
-    Object? manualTarget = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
+    Object? autoEnabled = null,
+    Object? forcedOff = null,
     Object? heaterOn = null,
     Object? isLoading = null,
     Object? error = freezed,
@@ -177,14 +184,6 @@ class __$$TempStateImplCopyWithImpl<$Res>
             ? _value.temperature
             : temperature // ignore: cast_nullable_to_non_nullable
                   as double,
-        mode: null == mode
-            ? _value.mode
-            : mode // ignore: cast_nullable_to_non_nullable
-                  as String,
-        manualTarget: null == manualTarget
-            ? _value.manualTarget
-            : manualTarget // ignore: cast_nullable_to_non_nullable
-                  as double,
         rangeMin: null == rangeMin
             ? _value.rangeMin
             : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -193,6 +192,14 @@ class __$$TempStateImplCopyWithImpl<$Res>
             ? _value.rangeMax
             : rangeMax // ignore: cast_nullable_to_non_nullable
                   as double,
+        autoEnabled: null == autoEnabled
+            ? _value.autoEnabled
+            : autoEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        forcedOff: null == forcedOff
+            ? _value.forcedOff
+            : forcedOff // ignore: cast_nullable_to_non_nullable
+                  as bool,
         heaterOn: null == heaterOn
             ? _value.heaterOn
             : heaterOn // ignore: cast_nullable_to_non_nullable
@@ -211,19 +218,22 @@ class __$$TempStateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$TempStateImpl implements _TempState {
   const _$TempStateImpl({
     this.espIp = '',
     this.temperature = 0.0,
-    this.mode = "off",
-    this.manualTarget = 40.0,
     this.rangeMin = 30.0,
     this.rangeMax = 35.0,
+    this.autoEnabled = false,
+    this.forcedOff = false,
     this.heaterOn = false,
     this.isLoading = false,
     this.error,
   });
+
+  factory _$TempStateImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TempStateImplFromJson(json);
 
   @override
   @JsonKey()
@@ -233,16 +243,16 @@ class _$TempStateImpl implements _TempState {
   final double temperature;
   @override
   @JsonKey()
-  final String mode;
-  @override
-  @JsonKey()
-  final double manualTarget;
-  @override
-  @JsonKey()
   final double rangeMin;
   @override
   @JsonKey()
   final double rangeMax;
+  @override
+  @JsonKey()
+  final bool autoEnabled;
+  @override
+  @JsonKey()
+  final bool forcedOff;
   @override
   @JsonKey()
   final bool heaterOn;
@@ -254,7 +264,7 @@ class _$TempStateImpl implements _TempState {
 
   @override
   String toString() {
-    return 'TempState(espIp: $espIp, temperature: $temperature, mode: $mode, manualTarget: $manualTarget, rangeMin: $rangeMin, rangeMax: $rangeMax, heaterOn: $heaterOn, isLoading: $isLoading, error: $error)';
+    return 'TempState(espIp: $espIp, temperature: $temperature, rangeMin: $rangeMin, rangeMax: $rangeMax, autoEnabled: $autoEnabled, forcedOff: $forcedOff, heaterOn: $heaterOn, isLoading: $isLoading, error: $error)';
   }
 
   @override
@@ -265,13 +275,14 @@ class _$TempStateImpl implements _TempState {
             (identical(other.espIp, espIp) || other.espIp == espIp) &&
             (identical(other.temperature, temperature) ||
                 other.temperature == temperature) &&
-            (identical(other.mode, mode) || other.mode == mode) &&
-            (identical(other.manualTarget, manualTarget) ||
-                other.manualTarget == manualTarget) &&
             (identical(other.rangeMin, rangeMin) ||
                 other.rangeMin == rangeMin) &&
             (identical(other.rangeMax, rangeMax) ||
                 other.rangeMax == rangeMax) &&
+            (identical(other.autoEnabled, autoEnabled) ||
+                other.autoEnabled == autoEnabled) &&
+            (identical(other.forcedOff, forcedOff) ||
+                other.forcedOff == forcedOff) &&
             (identical(other.heaterOn, heaterOn) ||
                 other.heaterOn == heaterOn) &&
             (identical(other.isLoading, isLoading) ||
@@ -279,15 +290,16 @@ class _$TempStateImpl implements _TempState {
             (identical(other.error, error) || other.error == error));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
     espIp,
     temperature,
-    mode,
-    manualTarget,
     rangeMin,
     rangeMax,
+    autoEnabled,
+    forcedOff,
     heaterOn,
     isLoading,
     error,
@@ -300,33 +312,41 @@ class _$TempStateImpl implements _TempState {
   @pragma('vm:prefer-inline')
   _$$TempStateImplCopyWith<_$TempStateImpl> get copyWith =>
       __$$TempStateImplCopyWithImpl<_$TempStateImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$TempStateImplToJson(this);
+  }
 }
 
 abstract class _TempState implements TempState {
   const factory _TempState({
     final String espIp,
     final double temperature,
-    final String mode,
-    final double manualTarget,
     final double rangeMin,
     final double rangeMax,
+    final bool autoEnabled,
+    final bool forcedOff,
     final bool heaterOn,
     final bool isLoading,
     final String? error,
   }) = _$TempStateImpl;
+
+  factory _TempState.fromJson(Map<String, dynamic> json) =
+      _$TempStateImpl.fromJson;
 
   @override
   String get espIp;
   @override
   double get temperature;
   @override
-  String get mode;
-  @override
-  double get manualTarget;
-  @override
   double get rangeMin;
   @override
   double get rangeMax;
+  @override
+  bool get autoEnabled;
+  @override
+  bool get forcedOff;
   @override
   bool get heaterOn;
   @override

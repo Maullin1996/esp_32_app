@@ -1,20 +1,24 @@
 import 'dart:async';
+
+import 'package:esp32_app/features/temperatura/domain/entities/temp_state.dart';
+import 'package:esp32_app/features/temperatura/domain/usecases/force_off_usecase.dart';
+import 'package:esp32_app/features/temperatura/domain/usecases/get_status_usecase.dart';
+import 'package:esp32_app/features/temperatura/domain/usecases/set_range_usecase.dart';
+import 'package:esp32_app/features/temperatura/domain/usecases/toggle_auto_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/temp_state.dart';
-import '../../domain/usecases/get_status_usecase.dart';
-import '../../domain/usecases/set_manual_usecase.dart';
-import '../../domain/usecases/set_range_usecase.dart';
-import '../../domain/usecases/stop_usecase.dart';
-
 class TempController extends StateNotifier<TempState> {
-  TempController(this._getStatus, this._setManual, this._setRange, this._stop)
-    : super(TempState.initial());
+  TempController(
+    this._getStatus,
+    this._setRange,
+    this._toggleAuto,
+    this._forceOff,
+  ) : super(TempState.initial());
 
   final GetStatusUsecase _getStatus;
-  final SetManualUsecase _setManual;
   final SetRangeUsecase _setRange;
-  final StopUsecase _stop;
+  final ToggleAutoUsecase _toggleAuto;
+  final ForceOffUsecase _forceOff;
 
   Timer? _timer;
 
@@ -36,10 +40,10 @@ class TempController extends StateNotifier<TempState> {
         success: (data) {
           state = state.copyWith(
             temperature: data.temperature,
-            mode: data.mode,
-            manualTarget: data.manualTarget,
             rangeMin: data.rangeMin,
             rangeMax: data.rangeMax,
+            autoEnabled: data.autoEnabled,
+            forcedOff: data.forcedOff,
             heaterOn: data.heaterOn,
             error: null,
           );
@@ -49,24 +53,6 @@ class TempController extends StateNotifier<TempState> {
         },
       );
     });
-  }
-
-  Future<void> applyManual(double target) async {
-    final ip = state.espIp;
-    if (ip.isEmpty) return;
-    state = state.copyWith(isLoading: true, error: null);
-
-    final r = await _setManual(ip: ip, target: target);
-
-    state = state.copyWith(isLoading: false);
-
-    r.when(
-      success: (_) {},
-      failure: (msg) {
-        state = state.copyWith(error: msg);
-        // No rompas la UI, solo reporta
-      },
-    );
   }
 
   Future<void> applyRange(double min, double max) async {
@@ -79,28 +65,49 @@ class TempController extends StateNotifier<TempState> {
     state = state.copyWith(isLoading: false);
 
     r.when(
-      success: (_) {},
+      success: (_) {
+        state = state.copyWith(rangeMin: min, rangeMax: max);
+      },
       failure: (msg) {
         state = state.copyWith(error: msg);
-        // No rompas la UI, solo reporta
       },
     );
   }
 
-  Future<void> stop() async {
+  Future<void> toggleAuto() async {
     final ip = state.espIp;
     if (ip.isEmpty) return;
-    state = state.copyWith(isLoading: true, error: null);
 
-    final r = await _stop(ip);
+    final newEnabled = !state.autoEnabled;
 
-    state = state.copyWith(isLoading: false);
+    final r = await _toggleAuto(ip: ip, enabled: newEnabled);
 
     r.when(
-      success: (_) => state = state.copyWith(mode: "off", heaterOn: false),
+      success: (_) {
+        state = state.copyWith(autoEnabled: newEnabled, forcedOff: false);
+      },
       failure: (msg) {
         state = state.copyWith(error: msg);
-        // No rompas la UI, solo reporta
+      },
+    );
+  }
+
+  Future<void> forceOff() async {
+    final ip = state.espIp;
+    if (ip.isEmpty) return;
+
+    final r = await _forceOff(ip);
+
+    r.when(
+      success: (_) {
+        state = state.copyWith(
+          heaterOn: false,
+          forcedOff: true,
+          autoEnabled: false,
+        );
+      },
+      failure: (msg) {
+        state = state.copyWith(error: msg);
       },
     );
   }

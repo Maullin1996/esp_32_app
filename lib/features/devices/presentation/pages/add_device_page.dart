@@ -55,7 +55,8 @@ class _AddSimpleDevicePageState extends ConsumerState<AddSimpleDevicePage> {
               style: TextStyle(fontSize: 16),
             ),
 
-            TextField(
+            TextFormField(
+              keyboardType: TextInputType.numberWithOptions(),
               controller: ipCtrl,
               decoration: const InputDecoration(
                 hintText: "Ej: 192.168.1.120",

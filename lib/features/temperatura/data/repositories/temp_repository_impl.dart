@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import '../../../../core/utils/result.dart';
-import '../../domain/entities/temp_state.dart';
-import '../../domain/repositories/temp_repository.dart';
-import '../datasources/temp_remote_datasource.dart';
+import 'package:esp32_app/core/utils/result.dart';
+import 'package:esp32_app/features/temperatura/data/datasources/temp_remote_datasource.dart';
+import 'package:esp32_app/features/temperatura/domain/entities/temp_state.dart';
+import 'package:esp32_app/features/temperatura/domain/repositories/temp_repository.dart';
 
 class TempRepositoryImpl implements TempRepository {
   final TempRemoteDatasource remote;
@@ -17,37 +17,19 @@ class TempRepositoryImpl implements TempRepository {
         return Failure("HTTP ${r.statusCode}");
       }
 
-      final json = jsonDecode(r.body);
+      final json = jsonDecode(r.body) as Map<String, dynamic>;
 
       return Success(
         TempState(
           espIp: ip,
-          temperature: (json["temperature"] ?? 0).toDouble(),
-          mode: json["mode"] ?? "off",
-          manualTarget: (json["target"] ?? 40).toDouble(),
-          rangeMin: (json["range_min"] ?? 30).toDouble(),
-          rangeMax: (json["range_max"] ?? 35).toDouble(),
-          heaterOn: json["heater"] == 1,
+          temperature: (json["temperature"] as num?)?.toDouble() ?? 0.0,
+          rangeMin: (json["range_min"] as num?)?.toDouble() ?? 30.0,
+          rangeMax: (json["range_max"] as num?)?.toDouble() ?? 35.0,
+          autoEnabled: (json["auto"] ?? 0) == 1,
+          forcedOff: (json["forced_off"] ?? 0) == 1,
+          heaterOn: (json["heater"] ?? 0) == 1,
         ),
       );
-    } catch (e) {
-      return Failure(e.toString());
-    }
-  }
-
-  @override
-  Future<Result<void>> setManual({
-    required String ip,
-    required double target,
-  }) async {
-    try {
-      final r = await remote
-          .setManual(ip, target)
-          .timeout(const Duration(seconds: 2));
-
-      return r.statusCode == 200
-          ? const Success(null)
-          : Failure("HTTP ${r.statusCode}");
     } catch (e) {
       return Failure(e.toString());
     }
@@ -73,9 +55,27 @@ class TempRepositoryImpl implements TempRepository {
   }
 
   @override
-  Future<Result<void>> stop(String ip) async {
+  Future<Result<void>> toggleAuto({
+    required String ip,
+    required bool enabled,
+  }) async {
     try {
-      final r = await remote.stop(ip).timeout(const Duration(seconds: 2));
+      final r = await remote
+          .toggleAuto(ip, enabled)
+          .timeout(const Duration(seconds: 2));
+
+      return r.statusCode == 200
+          ? const Success(null)
+          : Failure("HTTP ${r.statusCode}");
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
+  @override
+  Future<Result<void>> forceOff(String ip) async {
+    try {
+      final r = await remote.forceOff(ip).timeout(const Duration(seconds: 2));
 
       return r.statusCode == 200
           ? const Success(null)
