@@ -91,6 +91,9 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
       builder: (_) {
         return AlertDialog(
           title: Text("Asignar ${dev.hostname}"),
+
+          // lib/features/devices/presentation/pages/mdns_scan_page.dart
+          // Dentro de _showAssignDialog:
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -99,6 +102,7 @@ class _MdnsScanPageState extends ConsumerState<MdnsScanPage> {
               _assignItem("Humedad Suelo", "humedad", dev),
               _assignItem("Tanque", "tanque", dev),
               _assignItem("Ventilación (DHT11)", "ventilacion", dev),
+              _assignItem("Sensor Gas MQ-2", "sensor_gas", dev),
             ],
           ),
         );

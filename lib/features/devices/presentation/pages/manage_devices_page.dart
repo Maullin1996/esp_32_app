@@ -16,6 +16,7 @@ class ManageDevicesPage extends ConsumerWidget {
       "humedad": "Humedad Suelo",
       "tanque": "Tanque",
       "ventilacion": "Ventilación",
+      "sensor_gas": "Sensor Gas MQ-2",
     };
 
     return Scaffold(
