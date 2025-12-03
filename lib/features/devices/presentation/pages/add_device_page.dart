@@ -49,6 +49,7 @@ class _AddSimpleDevicePageState extends ConsumerState<AddSimpleDevicePage> {
                   value: "sensor_gas",
                   child: Text("Sensor Gas MQ-2"),
                 ),
+                DropdownMenuItem(value: "persiana", child: Text("Persiana")),
               ],
               onChanged: (v) => setState(() => module = v!),
             ),
@@ -64,7 +65,9 @@ class _AddSimpleDevicePageState extends ConsumerState<AddSimpleDevicePage> {
               controller: ipCtrl,
               decoration: const InputDecoration(
                 hintText: "Ej: 192.168.1.120",
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
               ),
             ),
 

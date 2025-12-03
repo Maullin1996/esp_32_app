@@ -3,6 +3,7 @@ import 'package:esp32_app/features/devices/presentation/pages/add_device_page.da
 import 'package:esp32_app/features/devices/presentation/pages/manage_devices_page.dart';
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/mq2/presentation/pages/mq2_page.dart';
+import 'package:esp32_app/features/persiana/presentation/pages/persiana_page.dart';
 import 'package:esp32_app/features/temperatura/presentation/pages/temp_page.dart';
 import 'package:esp32_app/features/ventilacion/presentation/pages/vent_page.dart';
 import 'package:esp32_app/ui/widget/custom_card.dart';
@@ -145,6 +146,18 @@ class HomePage extends ConsumerWidget {
                         icon: Icons.warning_amber_rounded,
                         title: "Sensor Gas MQ-2",
                         page: const Mq2Page(),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              AnimatedOpacity(
+                opacity: assigned["persiana"] != null ? 1 : 0,
+                duration: const Duration(milliseconds: 300),
+                child: (assigned["persiana"] != null)
+                    ? CustomCard(
+                        ctx: context,
+                        icon: Icons.warning_amber_rounded,
+                        title: "Gallinero",
+                        page: const PersianaPage(),
                       )
                     : const SizedBox.shrink(),
               ),
