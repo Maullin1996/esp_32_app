@@ -12,13 +12,13 @@ class HumedadRemoteDatasource {
 
   Future<http.Response> getStatus(String ip) => client.get(_uri(ip, "/status"));
 
-  Future<http.Response> setManual(String ip, double target) =>
-      client.post(_uri(ip, "/set_manual", {"target": target.toString()}));
-
   Future<http.Response> setRange(String ip, double min, double max) =>
       client.post(
         _uri(ip, "/set_range", {"min": min.toString(), "max": max.toString()}),
       );
 
   Future<http.Response> stop(String ip) => client.post(_uri(ip, "/stop"));
+
+  Future<http.Response> manualPump(String ip, bool state) =>
+      client.post(_uri(ip, "/manual_pump", {"state": state ? "1" : "0"}));
 }

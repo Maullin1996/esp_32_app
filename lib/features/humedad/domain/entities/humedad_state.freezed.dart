@@ -17,14 +17,18 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$HumedadState {
-  String get espIp => throw _privateConstructorUsedError;
-  double get humidity => throw _privateConstructorUsedError;
-  String get mode => throw _privateConstructorUsedError;
-  double get manualTarget => throw _privateConstructorUsedError;
+  String get espIp =>
+      throw _privateConstructorUsedError; // Valor de humedad leído (%)
+  double get humidity =>
+      throw _privateConstructorUsedError; // Sensado automático ON/OFF
+  bool get autoEnabled =>
+      throw _privateConstructorUsedError; // Rango de activación/desactivación
   double get rangeMin => throw _privateConstructorUsedError;
-  double get rangeMax => throw _privateConstructorUsedError;
-  bool get pumpOn => throw _privateConstructorUsedError;
-  bool get isLoading => throw _privateConstructorUsedError;
+  double get rangeMax =>
+      throw _privateConstructorUsedError; // Estado actual de la bomba
+  bool get pumpOn =>
+      throw _privateConstructorUsedError; // Loading opcional para botones
+  bool get isLoading => throw _privateConstructorUsedError; // Mensajes de error
   String? get error => throw _privateConstructorUsedError;
 
   /// Create a copy of HumedadState
@@ -44,8 +48,7 @@ abstract class $HumedadStateCopyWith<$Res> {
   $Res call({
     String espIp,
     double humidity,
-    String mode,
-    double manualTarget,
+    bool autoEnabled,
     double rangeMin,
     double rangeMax,
     bool pumpOn,
@@ -71,8 +74,7 @@ class _$HumedadStateCopyWithImpl<$Res, $Val extends HumedadState>
   $Res call({
     Object? espIp = null,
     Object? humidity = null,
-    Object? mode = null,
-    Object? manualTarget = null,
+    Object? autoEnabled = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
     Object? pumpOn = null,
@@ -89,14 +91,10 @@ class _$HumedadStateCopyWithImpl<$Res, $Val extends HumedadState>
                 ? _value.humidity
                 : humidity // ignore: cast_nullable_to_non_nullable
                       as double,
-            mode: null == mode
-                ? _value.mode
-                : mode // ignore: cast_nullable_to_non_nullable
-                      as String,
-            manualTarget: null == manualTarget
-                ? _value.manualTarget
-                : manualTarget // ignore: cast_nullable_to_non_nullable
-                      as double,
+            autoEnabled: null == autoEnabled
+                ? _value.autoEnabled
+                : autoEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
             rangeMin: null == rangeMin
                 ? _value.rangeMin
                 : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -135,8 +133,7 @@ abstract class _$$HumedadStateImplCopyWith<$Res>
   $Res call({
     String espIp,
     double humidity,
-    String mode,
-    double manualTarget,
+    bool autoEnabled,
     double rangeMin,
     double rangeMax,
     bool pumpOn,
@@ -161,8 +158,7 @@ class __$$HumedadStateImplCopyWithImpl<$Res>
   $Res call({
     Object? espIp = null,
     Object? humidity = null,
-    Object? mode = null,
-    Object? manualTarget = null,
+    Object? autoEnabled = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
     Object? pumpOn = null,
@@ -179,14 +175,10 @@ class __$$HumedadStateImplCopyWithImpl<$Res>
             ? _value.humidity
             : humidity // ignore: cast_nullable_to_non_nullable
                   as double,
-        mode: null == mode
-            ? _value.mode
-            : mode // ignore: cast_nullable_to_non_nullable
-                  as String,
-        manualTarget: null == manualTarget
-            ? _value.manualTarget
-            : manualTarget // ignore: cast_nullable_to_non_nullable
-                  as double,
+        autoEnabled: null == autoEnabled
+            ? _value.autoEnabled
+            : autoEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
         rangeMin: null == rangeMin
             ? _value.rangeMin
             : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -218,8 +210,7 @@ class _$HumedadStateImpl implements _HumedadState {
   const _$HumedadStateImpl({
     this.espIp = '',
     this.humidity = 0.0,
-    this.mode = "off",
-    this.manualTarget = 60.0,
+    this.autoEnabled = false,
     this.rangeMin = 30.0,
     this.rangeMax = 60.0,
     this.pumpOn = false,
@@ -230,33 +221,36 @@ class _$HumedadStateImpl implements _HumedadState {
   @override
   @JsonKey()
   final String espIp;
+  // Valor de humedad leído (%)
   @override
   @JsonKey()
   final double humidity;
+  // Sensado automático ON/OFF
   @override
   @JsonKey()
-  final String mode;
-  @override
-  @JsonKey()
-  final double manualTarget;
+  final bool autoEnabled;
+  // Rango de activación/desactivación
   @override
   @JsonKey()
   final double rangeMin;
   @override
   @JsonKey()
   final double rangeMax;
+  // Estado actual de la bomba
   @override
   @JsonKey()
   final bool pumpOn;
+  // Loading opcional para botones
   @override
   @JsonKey()
   final bool isLoading;
+  // Mensajes de error
   @override
   final String? error;
 
   @override
   String toString() {
-    return 'HumedadState(espIp: $espIp, humidity: $humidity, mode: $mode, manualTarget: $manualTarget, rangeMin: $rangeMin, rangeMax: $rangeMax, pumpOn: $pumpOn, isLoading: $isLoading, error: $error)';
+    return 'HumedadState(espIp: $espIp, humidity: $humidity, autoEnabled: $autoEnabled, rangeMin: $rangeMin, rangeMax: $rangeMax, pumpOn: $pumpOn, isLoading: $isLoading, error: $error)';
   }
 
   @override
@@ -267,9 +261,8 @@ class _$HumedadStateImpl implements _HumedadState {
             (identical(other.espIp, espIp) || other.espIp == espIp) &&
             (identical(other.humidity, humidity) ||
                 other.humidity == humidity) &&
-            (identical(other.mode, mode) || other.mode == mode) &&
-            (identical(other.manualTarget, manualTarget) ||
-                other.manualTarget == manualTarget) &&
+            (identical(other.autoEnabled, autoEnabled) ||
+                other.autoEnabled == autoEnabled) &&
             (identical(other.rangeMin, rangeMin) ||
                 other.rangeMin == rangeMin) &&
             (identical(other.rangeMax, rangeMax) ||
@@ -285,8 +278,7 @@ class _$HumedadStateImpl implements _HumedadState {
     runtimeType,
     espIp,
     humidity,
-    mode,
-    manualTarget,
+    autoEnabled,
     rangeMin,
     rangeMax,
     pumpOn,
@@ -307,8 +299,7 @@ abstract class _HumedadState implements HumedadState {
   const factory _HumedadState({
     final String espIp,
     final double humidity,
-    final String mode,
-    final double manualTarget,
+    final bool autoEnabled,
     final double rangeMin,
     final double rangeMax,
     final bool pumpOn,
@@ -317,21 +308,19 @@ abstract class _HumedadState implements HumedadState {
   }) = _$HumedadStateImpl;
 
   @override
-  String get espIp;
+  String get espIp; // Valor de humedad leído (%)
   @override
-  double get humidity;
+  double get humidity; // Sensado automático ON/OFF
   @override
-  String get mode;
-  @override
-  double get manualTarget;
+  bool get autoEnabled; // Rango de activación/desactivación
   @override
   double get rangeMin;
   @override
-  double get rangeMax;
+  double get rangeMax; // Estado actual de la bomba
   @override
-  bool get pumpOn;
+  bool get pumpOn; // Loading opcional para botones
   @override
-  bool get isLoading;
+  bool get isLoading; // Mensajes de error
   @override
   String? get error;
 

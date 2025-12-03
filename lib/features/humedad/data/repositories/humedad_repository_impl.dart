@@ -12,19 +12,14 @@ class HumedadRepositoryImpl implements HumedadRepository {
   @override
   Future<Result<HumedadState>> getStatus(String ip) async {
     try {
-      final r = await remote.getStatus(ip).timeout(const Duration(seconds: 2));
-      if (r.statusCode != 200) {
-        return Failure("HTTP ${r.statusCode}");
-      }
+      final r = await remote.getStatus(ip);
 
       final json = jsonDecode(r.body);
-
       return Success(
         HumedadState(
           espIp: ip,
           humidity: (json["humidity"] ?? 0).toDouble(),
-          mode: json["mode"] ?? "off",
-          manualTarget: (json["target"] ?? 60).toDouble(),
+          autoEnabled: json["auto_enabled"] == 1,
           rangeMin: (json["range_min"] ?? 30).toDouble(),
           rangeMax: (json["range_max"] ?? 60).toDouble(),
           pumpOn: json["pump"] == 1,
@@ -36,37 +31,14 @@ class HumedadRepositoryImpl implements HumedadRepository {
   }
 
   @override
-  Future<Result<void>> setManual({
-    required String ip,
-    required double target,
-  }) async {
-    try {
-      final r = await remote
-          .setManual(ip, target)
-          .timeout(const Duration(seconds: 2));
-
-      return r.statusCode == 200
-          ? const Success(null)
-          : Failure("HTTP ${r.statusCode}");
-    } catch (e) {
-      return Failure(e.toString());
-    }
-  }
-
-  @override
   Future<Result<void>> setRange({
-    required String ip,
-    required double min,
-    required double max,
+    required ip,
+    required min,
+    required max,
   }) async {
     try {
-      final r = await remote
-          .setRange(ip, min, max)
-          .timeout(const Duration(seconds: 2));
-
-      return r.statusCode == 200
-          ? const Success(null)
-          : Failure("HTTP ${r.statusCode}");
+      final r = await remote.setRange(ip, min, max);
+      return r.statusCode == 200 ? const Success(null) : Failure("HTTP error");
     } catch (e) {
       return Failure(e.toString());
     }
@@ -75,11 +47,18 @@ class HumedadRepositoryImpl implements HumedadRepository {
   @override
   Future<Result<void>> stop(String ip) async {
     try {
-      final r = await remote.stop(ip).timeout(const Duration(seconds: 2));
+      final r = await remote.stop(ip);
+      return r.statusCode == 200 ? const Success(null) : Failure("HTTP error");
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
 
-      return r.statusCode == 200
-          ? const Success(null)
-          : Failure("HTTP ${r.statusCode}");
+  @override
+  Future<Result<void>> manualPump(String ip, bool state) async {
+    try {
+      final r = await remote.manualPump(ip, state);
+      return r.statusCode == 200 ? const Success(null) : Failure("HTTP error");
     } catch (e) {
       return Failure(e.toString());
     }
