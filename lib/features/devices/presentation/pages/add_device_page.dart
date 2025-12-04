@@ -1,5 +1,6 @@
 import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/devices/presentation/providers/device_providers.dart';
+import 'package:esp32_app/features/devices/presentation/widget/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,11 +24,9 @@ class _AddDevicePageState extends ConsumerState<AddDevicePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(
+            CustomTextFormField(
               controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: "Nombre del dispositivo",
-              ),
+              labelText: "Nombre del dispositivo",
             ),
             const SizedBox(height: 12),
 
@@ -69,13 +68,11 @@ class _AddDevicePageState extends ConsumerState<AddDevicePage> {
 
             const SizedBox(height: 12),
 
-            TextField(
+            CustomTextFormField(
               controller: ipCtrl,
-              decoration: const InputDecoration(
-                labelText: "IP del ESP32 (estática)",
-                hintText: "192.168.1.120",
-              ),
-              keyboardType: TextInputType.numberWithOptions(),
+              labelText: "IP del ESP32 (estática)",
+              hint: "192.168.1.120",
+              keyboard: TextInputType.numberWithOptions(),
             ),
 
             const SizedBox(height: 20),
@@ -93,7 +90,10 @@ class _AddDevicePageState extends ConsumerState<AddDevicePage> {
 
                 Navigator.pop(context);
               },
-              child: const Text("Guardar"),
+              child: const Text(
+                "Guardar",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
