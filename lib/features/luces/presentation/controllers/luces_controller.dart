@@ -19,12 +19,13 @@ class LucesController extends StateNotifier<LucesState> {
       state = state.copyWith(error: 'Debes ingresar la IP del ESP32');
       return;
     }
+
     if (index < 0 || index >= AppConstants.relaysCount) return;
 
     final newRelays = [...state.relays];
     newRelays[index] = !newRelays[index];
 
-    state = state.copyWith(relays: newRelays, isSending: true, error: null);
+    state = state.copyWith(relays: newRelays, isSending: true);
 
     final result = await _setRelay(ip: ip, id: index, state: newRelays[index]);
 
@@ -33,8 +34,7 @@ class LucesController extends StateNotifier<LucesState> {
         state = state.copyWith(isSending: false);
       },
       failure: (msg) {
-        // revertimos
-        newRelays[index] = !newRelays[index];
+        newRelays[index] = !newRelays[index]; // revert
         state = state.copyWith(relays: newRelays, isSending: false, error: msg);
       },
     );

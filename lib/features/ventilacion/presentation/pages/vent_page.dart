@@ -1,10 +1,11 @@
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/ventilacion/presentation/providers/vent_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class VentilacionPage extends ConsumerStatefulWidget {
-  const VentilacionPage({super.key});
+  final DeviceEntity device;
+  const VentilacionPage({super.key, required this.device});
 
   @override
   ConsumerState<VentilacionPage> createState() => _VentilacionPageState();
@@ -25,10 +26,8 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
       Future(() {
         if (!mounted) return;
 
-        final ip = ref.read(assignedDevicesProvider)["ventilacion"];
-        if (ip != null) {
-          ref.read(ventControllerProvider.notifier).setIp(ip);
-        }
+        // ❤️ SOLO USAR EL DEVICE.NAME Y DEVICE.IP
+        ref.read(ventControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
   }
@@ -38,36 +37,39 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
     final vent = ref.watch(ventControllerProvider);
     final controller = ref.read(ventControllerProvider.notifier);
 
-    final ip = ref.watch(assignedDevicesProvider)["ventilacion"];
-    if (ip == null || vent.espIp.isEmpty) {
+    // ❌ YA NO USAMOS assignedDevicesProvider
+    if (vent.espIp.isEmpty) {
       return const Scaffold(
-        body: Center(child: Text("⛔ No hay ESP32 asignado a Ventilación")),
+        body: Center(child: Text("⛔ No hay ESP32 configurado")),
       );
     }
 
-    // Inicializar sliders una sola vez según el estado remoto
-    _newMin = _newMin == 24 ? vent.rangeMin : _newMin;
-    _newMax = _newMax == 28 ? vent.rangeMax : _newMax;
+    // Inicializar sliders una vez
+    _newMin = (_newMin == 24) ? vent.rangeMin : _newMin;
+    _newMax = (_newMax == 28) ? vent.rangeMax : _newMax;
 
     return Scaffold(
-      appBar: AppBar(title: Text("Ventilación (ESP: $ip)")),
+      appBar: AppBar(
+        title: Text("${widget.device.name} (${widget.device.ip})"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---- Indicadores ----
             Text(
               "🌡 Temperatura: ${vent.temperature.toStringAsFixed(1)}°C",
               style: const TextStyle(fontSize: 22),
             ),
             const SizedBox(height: 8),
+
             Text(
               "Rango actual: "
               "${vent.rangeMin.toStringAsFixed(1)}°C – "
               "${vent.rangeMax.toStringAsFixed(1)}°C",
             ),
             Text("Sensado: ${vent.autoEnabled ? "Activado" : "Desactivado"}"),
+
             Text(
               "Aire acondicionado: "
               "${vent.fanOn ? "💨 Encendido" : "⛔ Apagado"}",
@@ -76,6 +78,7 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             if (vent.error != null)
               Text(
                 "Error: ${vent.error}",
@@ -84,11 +87,11 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
 
             const Divider(height: 32),
 
-            // ---- Configuración rango ----
             const Text(
               "Configurar rango de temperatura",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 8),
 
             Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
@@ -120,24 +123,16 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () => controller.applyRange(_newMin, _newMax),
-                child: const Text(
-                  "Guardar rango",
-                  style: TextStyle(color: Colors.white),
-                ),
+                child: const Text("Guardar rango"),
               ),
             ),
 
             const SizedBox(height: 24),
 
-            // ---- Botón de sensado ----
             Center(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: vent.autoEnabled ? Colors.red : Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 10,
-                  ),
                 ),
                 onPressed: controller.toggleAuto,
                 icon: Icon(
@@ -158,16 +153,11 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
 
             const SizedBox(height: 16),
 
-            // ---- Botón manual AC (solo si auto OFF) ----
             if (!vent.autoEnabled)
               Center(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: vent.fanOn ? Colors.orange : Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 10,
-                    ),
                   ),
                   onPressed: controller.toggleFanManual,
                   icon: Icon(

@@ -1,14 +1,15 @@
 // lib/features/mq2/presentation/pages/mq2_page.dart
 
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:flutter/material.dart';
 
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 import 'package:esp32_app/features/mq2/presentation/providers/mq2_providers.dart';
 import 'package:esp32_app/features/mq2/domain/entities/mq2_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Mq2Page extends ConsumerStatefulWidget {
-  const Mq2Page({super.key});
+  final DeviceEntity device;
+  const Mq2Page({super.key, required this.device});
 
   @override
   ConsumerState<Mq2Page> createState() => _Mq2PageState();
@@ -32,10 +33,7 @@ class _Mq2PageState extends ConsumerState<Mq2Page> {
       Future(() {
         if (!mounted) return;
 
-        final ip = ref.read(assignedDevicesProvider)["sensor_gas"];
-        if (ip != null) {
-          ref.read(mq2ControllerProvider.notifier).setIp(ip);
-        }
+        ref.read(mq2ControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
   }
@@ -53,23 +51,13 @@ class _Mq2PageState extends ConsumerState<Mq2Page> {
     final state = ref.watch(mq2ControllerProvider);
     final controller = ref.read(mq2ControllerProvider.notifier);
 
-    final ip = ref.watch(assignedDevicesProvider)["sensor_gas"];
-
-    if (ip == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text("⛔ No hay ESP32 asignado al módulo Sensor Gas MQ-2"),
-        ),
-      );
-    }
-
     // ← este sync evita FREEZE
     _syncSliders(state);
 
     final (statusText, statusColor) = _statusInfo(state);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Sensor Gas MQ-2 (ESP: $ip)")),
+      appBar: AppBar(title: Text("Sensor Gas MQ-2 (ESP: ${state.espIp})")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(

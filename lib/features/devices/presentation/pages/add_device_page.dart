@@ -1,94 +1,97 @@
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
+import 'package:esp32_app/features/devices/presentation/providers/device_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/providers/assigned_devices_provider.dart';
 
-class AddSimpleDevicePage extends ConsumerStatefulWidget {
-  const AddSimpleDevicePage({super.key});
+class AddDevicePage extends ConsumerStatefulWidget {
+  const AddDevicePage({super.key});
 
   @override
-  ConsumerState<AddSimpleDevicePage> createState() =>
-      _AddSimpleDevicePageState();
+  ConsumerState<AddDevicePage> createState() => _AddDevicePageState();
 }
 
-class _AddSimpleDevicePageState extends ConsumerState<AddSimpleDevicePage> {
+class _AddDevicePageState extends ConsumerState<AddDevicePage> {
+  final nameCtrl = TextEditingController();
   final ipCtrl = TextEditingController();
-  String module = "luces";
+  String module = "temperatura"; // valor inicial
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Agregar ESP32")),
+      appBar: AppBar(title: const Text("Agregar dispositivo ESP32")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Selecciona el tipo de módulo:",
-              style: TextStyle(fontSize: 16),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: "Nombre del dispositivo",
+              ),
             ),
+            const SizedBox(height: 12),
 
             DropdownButton<String>(
               value: module,
               items: const [
-                DropdownMenuItem(value: "luces", child: Text("Luces 18 Relés")),
                 DropdownMenuItem(
                   value: "temperatura",
-                  child: Text("Temperatura/Agua"),
+                  child: Text("Temperatura / Agua"),
                 ),
+                DropdownMenuItem(value: "luces", child: Text("Luces")),
                 DropdownMenuItem(
                   value: "humedad",
                   child: Text("Humedad Suelo"),
                 ),
-                DropdownMenuItem(value: "tanque", child: Text("Tanque")),
+                DropdownMenuItem(
+                  value: "tanque",
+                  child: Text("Tanque (ultrasonido)"),
+                ),
                 DropdownMenuItem(
                   value: "ventilacion",
                   child: Text("Ventilación (DHT11)"),
                 ),
                 DropdownMenuItem(
-                  value: "sensor_gas",
-                  child: Text("Sensor Gas MQ-2"),
-                ),
-                DropdownMenuItem(value: "persiana", child: Text("Persiana")),
-                DropdownMenuItem(
                   value: "puerta",
-                  child: Text("Puerta automática"),
+                  child: Text("Puerta Automática"),
+                ),
+                DropdownMenuItem(
+                  value: "persiana",
+                  child: Text("Persiana Gallinero"),
+                ),
+                DropdownMenuItem(
+                  value: "sensor_gas",
+                  child: Text("Sensor MQ-2"),
                 ),
               ],
               onChanged: (v) => setState(() => module = v!),
             ),
 
-            const SizedBox(height: 20),
-            const Text(
-              "IP del ESP32 (IP estática):",
-              style: TextStyle(fontSize: 16),
-            ),
+            const SizedBox(height: 12),
 
-            TextFormField(
-              keyboardType: TextInputType.numberWithOptions(),
+            TextField(
               controller: ipCtrl,
               decoration: const InputDecoration(
-                hintText: "Ej: 192.168.1.120",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
+                labelText: "IP del ESP32 (estática)",
+                hintText: "192.168.1.120",
               ),
+              keyboardType: TextInputType.numberWithOptions(),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             ElevatedButton(
               onPressed: () {
+                final name = nameCtrl.text.trim();
                 final ip = ipCtrl.text.trim();
-                if (ip.isEmpty) return;
 
-                ref.read(assignedDevicesProvider.notifier).assign(module, ip);
+                if (name.isEmpty || ip.isEmpty) return;
+
+                final device = DeviceEntity(name: name, ip: ip, type: module);
+
+                ref.read(devicesControllerProvider.notifier).addDevice(device);
 
                 Navigator.pop(context);
-
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("Asignado a $module")));
               },
               child: const Text("Guardar"),
             ),

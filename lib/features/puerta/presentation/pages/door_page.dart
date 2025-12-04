@@ -1,10 +1,11 @@
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/puerta/presentation/providers/door_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DoorPage extends ConsumerStatefulWidget {
-  const DoorPage({super.key});
+  final DeviceEntity device;
+  const DoorPage({super.key, required this.device});
 
   @override
   ConsumerState<DoorPage> createState() => _DoorPageState();
@@ -22,10 +23,7 @@ class _DoorPageState extends ConsumerState<DoorPage> {
 
       Future(() {
         if (!mounted) return;
-        final ip = ref.read(assignedDevicesProvider)["puerta"];
-        if (ip != null) {
-          ref.read(doorControllerProvider.notifier).setIp(ip);
-        }
+        ref.read(doorControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
   }
@@ -45,9 +43,8 @@ class _DoorPageState extends ConsumerState<DoorPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(doorControllerProvider);
     final controller = ref.read(doorControllerProvider.notifier);
-    final ip = ref.watch(assignedDevicesProvider)["puerta"];
 
-    if (ip == null || state.espIp.isEmpty) {
+    if (state.espIp.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("⛔ No hay ESP32 asignado a Puerta")),
       );
@@ -61,7 +58,7 @@ class _DoorPageState extends ConsumerState<DoorPage> {
     final isDay = state.lux >= state.threshold;
 
     return Scaffold(
-      appBar: AppBar(title: Text("Puerta automática (ESP: $ip)")),
+      appBar: AppBar(title: Text("Puerta automática (ESP: ${state.espIp})")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

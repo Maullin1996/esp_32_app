@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/tanque/presentation/controllers/tanque_controller.dart';
 import 'package:esp32_app/features/tanque/presentation/providers/tanque_providers.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 class TanquePage extends ConsumerStatefulWidget {
-  const TanquePage({super.key});
+  final DeviceEntity device;
+  const TanquePage({super.key, required this.device});
 
   @override
   ConsumerState<TanquePage> createState() => _TanquePageState();
@@ -26,10 +28,7 @@ class _TanquePageState extends ConsumerState<TanquePage> {
     _controller = ref.read(tanqueControllerProvider.notifier);
 
     Future.microtask(() {
-      final ip = ref.read(assignedDevicesProvider)["tanque"];
-      if (ip != null) {
-        _controller.setIp(ip);
-      }
+      _controller.setIp(widget.device.ip);
     });
   }
 

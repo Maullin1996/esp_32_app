@@ -1,10 +1,11 @@
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/humedad/presentation/providers/humedad_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HumedadPage extends ConsumerStatefulWidget {
-  const HumedadPage({super.key});
+  final DeviceEntity device;
+  const HumedadPage({super.key, required this.device});
 
   @override
   ConsumerState<HumedadPage> createState() => _HumedadPageState();
@@ -25,10 +26,7 @@ class _HumedadPageState extends ConsumerState<HumedadPage> {
       Future(() {
         if (!mounted) return;
 
-        final ip = ref.read(assignedDevicesProvider)["humedad"];
-        if (ip != null) {
-          ref.read(humedadControllerProvider.notifier).setIp(ip);
-        }
+        ref.read(humedadControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
   }

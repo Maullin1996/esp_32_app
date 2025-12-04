@@ -1,10 +1,11 @@
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/persiana/presentation/providers/persiana_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PersianaPage extends ConsumerStatefulWidget {
-  const PersianaPage({super.key});
+  final DeviceEntity device;
+  const PersianaPage({super.key, required this.device});
 
   @override
   ConsumerState<PersianaPage> createState() => _PersianaPageState();
@@ -27,10 +28,8 @@ class _PersianaPageState extends ConsumerState<PersianaPage> {
 
       Future(() {
         if (!mounted) return;
-        final ip = ref.read(assignedDevicesProvider)["persiana"];
-        if (ip != null) {
-          ref.read(persianaControllerProvider.notifier).setIp(ip);
-        }
+
+        ref.read(persianaControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
   }
@@ -50,9 +49,8 @@ class _PersianaPageState extends ConsumerState<PersianaPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(persianaControllerProvider);
     final controller = ref.read(persianaControllerProvider.notifier);
-    final ip = ref.watch(assignedDevicesProvider)["persiana"];
 
-    if (ip == null || state.espIp.isEmpty) {
+    if (state.espIp.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("⛔ No hay ESP32 asignado a Persiana")),
       );
@@ -72,7 +70,7 @@ class _PersianaPageState extends ConsumerState<PersianaPage> {
     final isAuto = state.autoEnabled;
 
     return Scaffold(
-      appBar: AppBar(title: Text("Persiana (ESP: $ip)")),
+      appBar: AppBar(title: Text("Persiana (ESP: ${state.espIp})")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -1,6 +1,7 @@
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
+import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
 import 'package:esp32_app/features/devices/presentation/pages/add_device_page.dart';
 import 'package:esp32_app/features/devices/presentation/pages/manage_devices_page.dart';
+import 'package:esp32_app/features/devices/presentation/providers/device_providers.dart';
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/mq2/presentation/pages/mq2_page.dart';
 import 'package:esp32_app/features/persiana/presentation/pages/persiana_page.dart';
@@ -19,27 +20,23 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assigned = ref.watch(assignedDevicesProvider);
+    final devices = ref.watch(devicesControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Automatizaciones",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
+        title: const Text("Automatizaciones"),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AddSimpleDevicePage()),
+                MaterialPageRoute(builder: (_) => const AddDevicePage()),
               );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               Navigator.push(
                 context,
@@ -50,140 +47,66 @@ class HomePage extends ConsumerWidget {
         ],
       ),
 
-      body: Padding(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // -----------------------------
-              // LUCES
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["luces"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["luces"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.light_mode,
-                        title: "Luces 18 Relés",
-                        page: const Luces18Page(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
+        itemCount: devices.length,
+        itemBuilder: (_, i) {
+          final dev = devices[i];
 
-              // -----------------------------
-              // TEMPERATURA / AGUA
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["temperatura"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["temperatura"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.thermostat_sharp,
-                        title: "Temperatura / Agua",
-                        page: const TemperaturaPage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-
-              // -----------------------------
-              // HUMEDAD DE SUELO
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["humedad"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["humedad"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.grain,
-                        title: "Humedad de Suelo",
-                        page: const HumedadPage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-
-              // -----------------------------
-              // TANQUE
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["tanque"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["tanque"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.bathroom,
-                        title: "Tanque (ultrasonido)",
-                        page: const TanquePage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-
-              // -----------------------------
-              // VENTILACIÓN (DHT11)
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["ventilacion"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["ventilacion"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.air,
-                        title: "Ventilación (DHT11)",
-                        page: const VentilacionPage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-
-              // -----------------------------
-              // SENSOR GAS MQ-2
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["sensor_gas"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["sensor_gas"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.warning_amber_rounded,
-                        title: "Sensor Gas MQ-2",
-                        page: const Mq2Page(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              // -----------------------------
-              // Persiana
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["persiana"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["persiana"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.curtains,
-                        title: "Gallinero",
-                        page: const PersianaPage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              // -----------------------------
-              // Puerta automática
-              // -----------------------------
-              AnimatedOpacity(
-                opacity: assigned["puerta"] != null ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
-                child: (assigned["puerta"] != null)
-                    ? CustomCard(
-                        ctx: context,
-                        icon: Icons.door_back_door,
-                        title: "Puerta Gallinero",
-                        page: const DoorPage(),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
+          return CustomCard(
+            ctx: context,
+            icon: _iconForType(dev.type),
+            title: dev.name,
+            page: _pageForType(dev),
+          );
+        },
       ),
     );
+  }
+
+  IconData _iconForType(String type) {
+    switch (type) {
+      case "luces":
+        return Icons.light_mode;
+      case "temperatura":
+        return Icons.thermostat;
+      case "humedad":
+        return Icons.grass;
+      case "tanque":
+        return Icons.bathroom;
+      case "ventilacion":
+        return Icons.air;
+      case "sensor_gas":
+        return Icons.warning;
+      case "persiana":
+        return Icons.curtains;
+      case "puerta":
+        return Icons.door_back_door;
+      default:
+        return Icons.device_unknown;
+    }
+  }
+
+  Widget _pageForType(DeviceEntity dev) {
+    switch (dev.type) {
+      case "temperatura":
+        return TemperaturaPage(device: dev);
+      case "luces":
+        return Luces18Page(device: dev);
+      case "humedad":
+        return HumedadPage(device: dev);
+      case "tanque":
+        return TanquePage(device: dev);
+      case "ventilacion":
+        return VentilacionPage(device: dev);
+      case "sensor_gas":
+        return Mq2Page(device: dev);
+      case "persiana":
+        return PersianaPage(device: dev);
+      case "puerta":
+        return DoorPage(device: dev);
+      default:
+        return const Scaffold(body: Center(child: Text("Tipo no soportado")));
+    }
   }
 }

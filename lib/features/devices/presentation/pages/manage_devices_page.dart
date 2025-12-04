@@ -1,53 +1,64 @@
+import 'package:esp32_app/features/devices/presentation/providers/device_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/providers/assigned_devices_provider.dart';
 
 class ManageDevicesPage extends ConsumerWidget {
   const ManageDevicesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assigned = ref.watch(assignedDevicesProvider);
-    final controller = ref.read(assignedDevicesProvider.notifier);
-
-    final modules = {
-      "luces": "Luces 18 Relés",
-      "temperatura": "Temperatura",
-      "humedad": "Humedad Suelo",
-      "tanque": "Tanque",
-      "ventilacion": "Ventilación",
-      "sensor_gas": "Sensor Gas MQ-2",
-      "persiana": "Persiana",
-      "puerta": "Puerta automática",
-    };
+    final devices = ref.watch(devicesControllerProvider);
+    final controller = ref.read(devicesControllerProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Gestionar ESP32")),
-      body: ListView(
-        children: modules.entries.map((entry) {
-          final key = entry.key;
-          final name = entry.value;
-          final ip = assigned[key];
+      appBar: AppBar(title: const Text("Gestionar dispositivos")),
+      body: devices.isEmpty
+          ? const Center(child: Text("No hay dispositivos registrados"))
+          : ListView.builder(
+              itemCount: devices.length,
+              itemBuilder: (_, i) {
+                final dev = devices[i];
 
-          return Card(
-            child: ListTile(
-              title: Text(name),
-              subtitle: Text(ip != null ? "IP: $ip" : "Sin dispositivo"),
-              trailing: ip != null
-                  ? IconButton(
+                return Card(
+                  child: ListTile(
+                    leading: Icon(_iconForType(dev.type), size: 32),
+                    title: Text(dev.name),
+                    subtitle: Text("${dev.type} • IP: ${dev.ip}"),
+                    trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
-                        controller.remove(key); // ELIMINA EL ESP32
+                        controller.removeDevice(i);
+
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Eliminado $name")),
+                          SnackBar(content: Text("${dev.name} eliminado")),
                         );
                       },
-                    )
-                  : null,
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        }).toList(),
-      ),
     );
+  }
+
+  IconData _iconForType(String type) {
+    switch (type) {
+      case "temperatura":
+        return Icons.thermostat;
+      case "humedad":
+        return Icons.grass;
+      case "tanque":
+        return Icons.water;
+      case "ventilacion":
+        return Icons.air;
+      case "sensor_gas":
+        return Icons.warning;
+      case "persiana":
+        return Icons.curtains;
+      case "puerta":
+        return Icons.door_back_door;
+      default:
+        return Icons.device_unknown;
+    }
   }
 }
