@@ -1,7 +1,6 @@
 // lib/features/mq2/presentation/providers/mq2_providers.dart
 
 import 'package:esp32_app/core/providers/http_provider.dart';
-import 'package:esp32_app/core/providers/assigned_devices_provider.dart';
 
 import 'package:esp32_app/features/mq2/data/datasources/mq2_remote_datasource.dart';
 import 'package:esp32_app/features/mq2/data/repositories/mq2_repository_impl.dart';
@@ -49,7 +48,7 @@ final setMq2SensingUsecaseProvider = Provider(
 // CONTROLLER
 final mq2ControllerProvider =
     StateNotifierProvider.autoDispose<Mq2Controller, Mq2State>((ref) {
-      final controller = Mq2Controller(
+      final c = Mq2Controller(
         ref.read(getMq2StatusUsecaseProvider),
         ref.read(setMq2AutoUsecaseProvider),
         ref.read(setMq2ThresholdsUsecaseProvider),
@@ -57,15 +56,6 @@ final mq2ControllerProvider =
         ref.read(setMq2SensingUsecaseProvider),
       );
 
-      // Tomar IP desde assignedDevicesProvider con clave "sensor_gas"
-      final assigned = ref.read(assignedDevicesProvider);
-      final ip = assigned["sensor_gas"];
-
-      if (ip != null && ip.isNotEmpty) {
-        controller.setIp(ip);
-      }
-
-      ref.onDispose(controller.dispose);
-
-      return controller;
+      ref.onDispose(c.dispose);
+      return c;
     });

@@ -45,7 +45,8 @@ class Mq2Controller extends StateNotifier<Mq2State> {
 
       r.when(
         success: (data) {
-          state = state.copyWith(
+          // Solo actualiza si cambió algo
+          final newState = state.copyWith(
             ppm: data.ppm,
             autoOn: data.autoOn,
             alarmOn: data.alarmOn,
@@ -54,10 +55,16 @@ class Mq2Controller extends StateNotifier<Mq2State> {
             sensingOn: data.sensingOn,
             error: null,
           );
+
+          if (newState != state) {
+            state = newState;
+          }
         },
         failure: (msg) {
-          debugPrint("MQ2 getStatus error: $msg");
-          state = state.copyWith(error: msg);
+          if (state.error != msg) {
+            debugPrint("MQ2 getStatus error: $msg");
+            state = state.copyWith(error: msg);
+          }
         },
       );
     });

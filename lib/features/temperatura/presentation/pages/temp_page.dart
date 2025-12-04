@@ -120,7 +120,10 @@ class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
                 onPressed: temp.isLoading
                     ? null
                     : () => controller.applyRange(_newMin, _newMax),
-                child: const Text("Guardar rango"),
+                child: const Text(
+                  "Guardar rango",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
 
@@ -136,10 +139,15 @@ class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
                 onPressed: controller.toggleAuto,
                 icon: Icon(
                   temp.autoEnabled ? Icons.pause_circle : Icons.play_circle,
+                  color: Colors.white,
                 ),
                 label: Text(
                   temp.autoEnabled ? "Desactivar sensado" : "Activar sensado",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

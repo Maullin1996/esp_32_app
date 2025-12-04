@@ -50,6 +50,10 @@ class _AddSimpleDevicePageState extends ConsumerState<AddSimpleDevicePage> {
                   child: Text("Sensor Gas MQ-2"),
                 ),
                 DropdownMenuItem(value: "persiana", child: Text("Persiana")),
+                DropdownMenuItem(
+                  value: "puerta",
+                  child: Text("Puerta automática"),
+                ),
               ],
               onChanged: (v) => setState(() => module = v!),
             ),

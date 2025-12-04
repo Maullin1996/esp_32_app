@@ -120,7 +120,10 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () => controller.applyRange(_newMin, _newMax),
-                child: const Text("Guardar rango"),
+                child: const Text(
+                  "Guardar rango",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
 
@@ -140,12 +143,14 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
                 icon: Icon(
                   vent.autoEnabled ? Icons.pause_circle : Icons.play_circle,
                   size: 28,
+                  color: Colors.white,
                 ),
                 label: Text(
                   vent.autoEnabled ? "Desactivar sensado" : "Activar sensado",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -168,6 +173,7 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
                   icon: Icon(
                     vent.fanOn ? Icons.power_settings_new : Icons.ac_unit,
                     size: 26,
+                    color: Colors.white,
                   ),
                   label: Text(
                     vent.fanOn
@@ -176,6 +182,7 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),

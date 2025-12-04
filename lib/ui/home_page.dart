@@ -4,6 +4,7 @@ import 'package:esp32_app/features/devices/presentation/pages/manage_devices_pag
 import 'package:esp32_app/features/luces/presentation/pages/luces_page.dart';
 import 'package:esp32_app/features/mq2/presentation/pages/mq2_page.dart';
 import 'package:esp32_app/features/persiana/presentation/pages/persiana_page.dart';
+import 'package:esp32_app/features/puerta/presentation/pages/door_page.dart';
 import 'package:esp32_app/features/temperatura/presentation/pages/temp_page.dart';
 import 'package:esp32_app/features/ventilacion/presentation/pages/vent_page.dart';
 import 'package:esp32_app/ui/widget/custom_card.dart';
@@ -149,15 +150,33 @@ class HomePage extends ConsumerWidget {
                       )
                     : const SizedBox.shrink(),
               ),
+              // -----------------------------
+              // Persiana
+              // -----------------------------
               AnimatedOpacity(
                 opacity: assigned["persiana"] != null ? 1 : 0,
                 duration: const Duration(milliseconds: 300),
                 child: (assigned["persiana"] != null)
                     ? CustomCard(
                         ctx: context,
-                        icon: Icons.warning_amber_rounded,
+                        icon: Icons.curtains,
                         title: "Gallinero",
                         page: const PersianaPage(),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              // -----------------------------
+              // Puerta automática
+              // -----------------------------
+              AnimatedOpacity(
+                opacity: assigned["puerta"] != null ? 1 : 0,
+                duration: const Duration(milliseconds: 300),
+                child: (assigned["puerta"] != null)
+                    ? CustomCard(
+                        ctx: context,
+                        icon: Icons.door_back_door,
+                        title: "Puerta Gallinero",
+                        page: const DoorPage(),
                       )
                     : const SizedBox.shrink(),
               ),

@@ -18,6 +18,7 @@ class ManageDevicesPage extends ConsumerWidget {
       "ventilacion": "Ventilación",
       "sensor_gas": "Sensor Gas MQ-2",
       "persiana": "Persiana",
+      "puerta": "Puerta automática",
     };
 
     return Scaffold(
