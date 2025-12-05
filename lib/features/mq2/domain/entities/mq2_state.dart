@@ -6,7 +6,7 @@ part 'mq2_state.freezed.dart';
 part 'mq2_state.g.dart';
 
 @freezed
-class Mq2State with _$Mq2State {
+abstract class Mq2State with _$Mq2State {
   const factory Mq2State({
     @Default('') String espIp,
     @Default(0) int ppm,

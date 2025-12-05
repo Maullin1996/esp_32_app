@@ -46,16 +46,17 @@ final setMq2SensingUsecaseProvider = Provider(
 );
 
 // CONTROLLER
-final mq2ControllerProvider =
-    StateNotifierProvider.autoDispose<Mq2Controller, Mq2State>((ref) {
-      final c = Mq2Controller(
-        ref.read(getMq2StatusUsecaseProvider),
-        ref.read(setMq2AutoUsecaseProvider),
-        ref.read(setMq2ThresholdsUsecaseProvider),
-        ref.read(setMq2AlarmManualUsecaseProvider),
-        ref.read(setMq2SensingUsecaseProvider),
-      );
+final mq2ControllerProvider = StateNotifierProvider<Mq2Controller, Mq2State>((
+  ref,
+) {
+  final c = Mq2Controller(
+    ref.read(getMq2StatusUsecaseProvider),
+    ref.read(setMq2AutoUsecaseProvider),
+    ref.read(setMq2ThresholdsUsecaseProvider),
+    ref.read(setMq2AlarmManualUsecaseProvider),
+    ref.read(setMq2SensingUsecaseProvider),
+  );
 
-      ref.onDispose(c.dispose);
-      return c;
-    });
+  ref.onDispose(c.dispose);
+  return c;
+});

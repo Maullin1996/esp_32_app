@@ -16,43 +16,45 @@ class Mq2Page extends ConsumerStatefulWidget {
 }
 
 class _Mq2PageState extends ConsumerState<Mq2Page> {
-  bool _initialized = false;
-
-  // Sliders
-  double _lowTh = 0;
   double _highTh = 0;
-  bool _userIsMovingSlider = false;
+  double _lowTh = 0;
+  //bool _userIsMovingSlider = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (!_initialized) {
-      _initialized = true;
-
-      Future(() {
-        if (!mounted) return;
-
-        ref.read(mq2ControllerProvider.notifier).setIp(widget.device.ip);
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(mq2ControllerProvider.notifier).setIp(widget.device.ip);
+    });
   }
 
   // Sincroniza sliders solo cuando el usuario NO los está moviendo
   void _syncSliders(Mq2State state) {
-    if (!_userIsMovingSlider) {
-      _lowTh = state.lowTh.toDouble();
-      _highTh = state.highTh.toDouble();
-    }
+    _lowTh = state.lowTh.toDouble();
+    _highTh = state.highTh.toDouble();
   }
+
+  // @override
+  // void dispose() {
+  //   ref.read(mq2ControllerProvider.notifier).stopPolling();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(mq2ControllerProvider);
     final controller = ref.read(mq2ControllerProvider.notifier);
 
-    // ← este sync evita FREEZE
-    _syncSliders(state);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      // Evitar que se sobrescriban los valores mientras está guardando
+      if (!state.isSaving) {
+        _syncSliders(state);
+      }
+    });
 
     final (statusText, statusColor) = _statusInfo(state);
 
@@ -211,13 +213,13 @@ class _Mq2PageState extends ConsumerState<Mq2Page> {
               const SizedBox(height: 10),
 
               // SLIDER LOW
-              Text('Umbral bajo (low_th): ${_lowTh.toInt()} ppm'),
+              Text('Umbral bajo (low_th): $_lowTh ppm'),
               Slider(
                 value: _lowTh,
                 min: 0,
                 max: 1000,
                 divisions: 100,
-                onChangeStart: (_) => _userIsMovingSlider = true,
+                //onChangeStart: (_) => _userIsMovingSlider = true,
                 onChanged: state.isSaving
                     ? null
                     : (value) {
@@ -225,19 +227,19 @@ class _Mq2PageState extends ConsumerState<Mq2Page> {
                           _lowTh = value.clamp(0, _highTh - 10);
                         });
                       },
-                onChangeEnd: (_) => _userIsMovingSlider = false,
+                //onChangeEnd: (_) => _userIsMovingSlider = false,
               ),
 
               const SizedBox(height: 8),
 
               // SLIDER HIGH
-              Text('Umbral alto (high_th): ${_highTh.toInt()} ppm'),
+              Text('Umbral alto (high_th): $_highTh ppm'),
               Slider(
-                value: _highTh,
+                value: _highTh.toDouble(),
                 min: 0,
                 max: 1000,
                 divisions: 100,
-                onChangeStart: (_) => _userIsMovingSlider = true,
+                //onChangeStart: (_) => _userIsMovingSlider = true,
                 onChanged: state.isSaving
                     ? null
                     : (value) {
@@ -245,7 +247,7 @@ class _Mq2PageState extends ConsumerState<Mq2Page> {
                           _highTh = value.clamp(_lowTh + 10, 1000);
                         });
                       },
-                onChangeEnd: (_) => _userIsMovingSlider = false,
+                //onChangeEnd: (_) => _userIsMovingSlider = false,
               ),
 
               const SizedBox(height: 8),
