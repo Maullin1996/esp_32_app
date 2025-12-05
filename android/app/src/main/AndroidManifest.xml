@@ -27,7 +27,7 @@
 
 
     <application
-        android:label="esp32_app"
+        android:label="domotica"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
