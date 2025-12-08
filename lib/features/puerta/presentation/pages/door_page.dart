@@ -57,158 +57,162 @@ class _DoorPageState extends ConsumerState<DoorPage> {
     final isAuto = state.autoEnabled;
     final isDay = state.lux >= state.threshold;
 
-    return Scaffold(
-      appBar: AppBar(title: Text("Puerta automática (ESP: ${state.espIp})")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ----- ESTADO -----
-            Text(
-              "💡 Luz: ${state.lux.toStringAsFixed(1)} %",
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Ambiente: ${isDay ? "DÍA" : "NOCHE"}",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDay ? Colors.orange : Colors.blueGrey,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text("Estado motor: "),
-                Text(
-                  state.state,
-                  style: TextStyle(
-                    color: _stateColor(state.state),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            Text("Final abierto: ${state.fullyOpen ? "✅" : "❌"}"),
-            Text("Final cerrado: ${state.fullyClosed ? "✅" : "❌"}"),
-            const SizedBox(height: 8),
-            Text(
-              "Modo: ${isAuto ? "Automático (día/noche)" : "Manual"}",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isAuto ? Colors.blue : Colors.grey[800],
-              ),
-            ),
-            if (state.error != null) ...[
-              const SizedBox(height: 8),
+    return SafeArea(
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(title: Text("Puerta automática (ESP: ${state.espIp})")),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ----- ESTADO -----
               Text(
-                "Error: ${state.error}",
-                style: const TextStyle(color: Colors.red),
+                "💡 Luz: ${state.lux.toStringAsFixed(1)} %",
+                style: const TextStyle(fontSize: 20),
               ),
-            ],
-
-            const Divider(height: 32),
-
-            // ----- UMBRAL LUZ -----
-            const Text(
-              "Umbral de luz para AUTO",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text("Umbral actual: ${state.threshold} %"),
-            const SizedBox(height: 4),
-            Text("Nuevo umbral: ${_newThreshold.toInt()} %"),
-            Slider(
-              value: _newThreshold,
-              min: 0,
-              max: 100,
-              onChanged: (v) {
-                setState(() {
-                  _newThreshold = v;
-                });
-              },
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () =>
-                    controller.applyThreshold(_newThreshold.toInt()),
-                child: const Text(
-                  "Guardar umbral",
-                  style: TextStyle(color: Colors.white),
+              const SizedBox(height: 4),
+              Text(
+                "Ambiente: ${isDay ? "DÍA" : "NOCHE"}",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDay ? Colors.orange : Colors.blueGrey,
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ----- BOTÓN AUTO ON/OFF -----
-            Center(
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isAuto ? Colors.red : Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 10,
-                  ),
-                ),
-                onPressed: controller.toggleAuto,
-                icon: Icon(
-                  isAuto ? Icons.pause_circle : Icons.play_circle,
-                  size: 28,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  isAuto ? "Desactivar automático" : "Activar automático",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ----- CONTROLES MANUALES -----
-            if (!isAuto) ...[
-              const Text(
-                "Control manual de puerta (mantén presionado)",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _pressHoldButton(
-                    context: context,
-                    label: "Abrir",
-                    color: Colors.blue,
-                    icon: Icons.arrow_upward,
-                    onDown: () => controller.startOpen(),
-                    onUp: () => controller.stopManual(),
-                  ),
-                  _pressHoldButton(
-                    context: context,
-                    label: "Cerrar",
-                    color: Colors.orange,
-                    icon: Icons.arrow_downward,
-                    onDown: () => controller.startClose(),
-                    onUp: () => controller.stopManual(),
+                  const Text("Estado motor: "),
+                  Text(
+                    state.state,
+                    style: TextStyle(
+                      color: _stateColor(state.state),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 12),
-              const Text(
-                "Al soltar el botón, la puerta se detiene.\nLos finales de carrera evitan sobrecarrera.",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Text("Final abierto: ${state.fullyOpen ? "✅" : "❌"}"),
+              Text("Final cerrado: ${state.fullyClosed ? "✅" : "❌"}"),
+              const SizedBox(height: 8),
+              Text(
+                "Modo: ${isAuto ? "Automático (día/noche)" : "Manual"}",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isAuto ? Colors.blue : Colors.grey[800],
+                ),
               ),
+              if (state.error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  "Error: ${state.error}",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+
+              const Divider(height: 32),
+
+              // ----- UMBRAL LUZ -----
+              const Text(
+                "Umbral de luz para AUTO",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text("Umbral actual: ${state.threshold} %"),
+              const SizedBox(height: 4),
+              Text("Nuevo umbral: ${_newThreshold.toInt()} %"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newThreshold,
+                min: 0,
+                max: 100,
+                onChanged: (v) {
+                  setState(() {
+                    _newThreshold = v;
+                  });
+                },
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () =>
+                      controller.applyThreshold(_newThreshold.toInt()),
+                  child: const Text(
+                    "Guardar umbral",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ----- BOTÓN AUTO ON/OFF -----
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isAuto ? Colors.red : Colors.green,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                  ),
+                  onPressed: controller.toggleAuto,
+                  icon: Icon(
+                    isAuto ? Icons.pause_circle : Icons.play_circle,
+                    size: 28,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    isAuto ? "Desactivar automático" : "Activar automático",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ----- CONTROLES MANUALES -----
+              if (!isAuto) ...[
+                const Text(
+                  "Control manual de puerta (mantén presionado)",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _pressHoldButton(
+                      context: context,
+                      label: "Abrir",
+                      color: Colors.blue,
+                      icon: Icons.arrow_upward,
+                      onDown: () => controller.startOpen(),
+                      onUp: () => controller.stopManual(),
+                    ),
+                    _pressHoldButton(
+                      context: context,
+                      label: "Cerrar",
+                      color: Colors.orange,
+                      icon: Icons.arrow_downward,
+                      onDown: () => controller.startClose(),
+                      onUp: () => controller.stopManual(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+                const Text(
+                  "Al soltar el botón, la puerta se detiene.\nLos finales de carrera evitan sobrecarrera.",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

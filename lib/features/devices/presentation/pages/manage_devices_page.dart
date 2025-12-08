@@ -10,34 +10,38 @@ class ManageDevicesPage extends ConsumerWidget {
     final devices = ref.watch(devicesControllerProvider);
     final controller = ref.read(devicesControllerProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Gestionar dispositivos")),
-      body: devices.isEmpty
-          ? const Center(child: Text("No hay dispositivos registrados"))
-          : ListView.builder(
-              itemCount: devices.length,
-              itemBuilder: (_, i) {
-                final dev = devices[i];
+    return SafeArea(
+      top: true,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Gestionar dispositivos")),
+        body: devices.isEmpty
+            ? const Center(child: Text("No hay dispositivos registrados"))
+            : ListView.builder(
+                itemCount: devices.length,
+                itemBuilder: (_, i) {
+                  final dev = devices[i];
 
-                return Card(
-                  child: ListTile(
-                    leading: Icon(_iconForType(dev.type), size: 32),
-                    title: Text(dev.name),
-                    subtitle: Text("${dev.type} • IP: ${dev.ip}"),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        controller.removeDevice(i);
+                  return Card(
+                    child: ListTile(
+                      leading: Icon(_iconForType(dev.type), size: 32),
+                      title: Text(dev.name),
+                      subtitle: Text("${dev.type} • IP: ${dev.ip}"),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          controller.removeDevice(i);
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("${dev.name} eliminado")),
-                        );
-                      },
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("${dev.name} eliminado")),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+      ),
     );
   }
 
@@ -57,6 +61,8 @@ class ManageDevicesPage extends ConsumerWidget {
         return Icons.curtains;
       case "puerta":
         return Icons.door_back_door;
+      case "luces":
+        return Icons.light_mode;
       default:
         return Icons.device_unknown;
     }

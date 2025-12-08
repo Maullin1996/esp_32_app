@@ -48,95 +48,110 @@ class _TemperaturaPageState extends ConsumerState<TemperaturaPage> {
     _newMin = (_newMin == 30) ? temp.rangeMin : _newMin;
     _newMax = (_newMax == 35) ? temp.rangeMax : _newMax;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.device.name} (${widget.device.ip})"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "🌡 Temperatura: ${temp.temperature.toStringAsFixed(1)}°C",
-              style: const TextStyle(fontSize: 22),
-            ),
-            const SizedBox(height: 8),
+    return SafeArea(
+      top: true,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("${widget.device.name} (${widget.device.ip})"),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "🌡 Temperatura: ${temp.temperature.toStringAsFixed(1)}°C",
+                  style: const TextStyle(fontSize: 22),
+                ),
+                const SizedBox(height: 8),
 
-            Text(
-              "Rango actual: "
-              "${temp.rangeMin.toStringAsFixed(1)}°C - "
-              "${temp.rangeMax.toStringAsFixed(1)}°C",
-            ),
-            Text("Sensado: ${temp.autoEnabled ? "Activado" : "Desactivado"}"),
-            Text("Heater: ${temp.heaterOn ? "🔥 Encendido" : "❄ Apagado"}"),
+                Text(
+                  "Rango actual: "
+                  "${temp.rangeMin.toStringAsFixed(1)}°C - "
+                  "${temp.rangeMax.toStringAsFixed(1)}°C",
+                ),
+                Text(
+                  "Sensado: ${temp.autoEnabled ? "Activado" : "Desactivado"}",
+                ),
+                Text("Heater: ${temp.heaterOn ? "🔥 Encendido" : "❄ Apagado"}"),
 
-            if (temp.error != null)
-              Text(
-                "Error: ${temp.error}",
-                style: const TextStyle(color: Colors.red),
-              ),
+                if (temp.error != null)
+                  Text(
+                    "Error: ${temp.error}",
+                    style: const TextStyle(color: Colors.red),
+                  ),
 
-            const Divider(height: 32),
+                const Divider(height: 32),
 
-            const Text("Configurar rango de temperatura"),
-            const SizedBox(height: 8),
+                const Text("Configurar rango de temperatura"),
+                const SizedBox(height: 8),
 
-            Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
-            Slider(
-              value: _newMin,
-              min: 5,
-              max: _newMax - 1,
-              onChanged: (v) {
-                setState(() {
-                  _newMin = v;
-                  if (_newMax <= _newMin) _newMax = _newMin + 1;
-                });
-              },
-            ),
+                Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
+                Slider(
+                  activeColor: Colors.blue,
+                  value: _newMin,
+                  min: 5,
+                  max: _newMax - 1,
+                  onChanged: (v) {
+                    setState(() {
+                      _newMin = v;
+                      if (_newMax <= _newMin) _newMax = _newMin + 1;
+                    });
+                  },
+                ),
 
-            Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
-            Slider(
-              value: _newMax,
-              min: _newMin + 1,
-              max: 80,
-              onChanged: (v) {
-                setState(() {
-                  _newMax = v;
-                  if (_newMax <= _newMin) _newMin = _newMax - 1;
-                });
-              },
-            ),
+                Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
+                Slider(
+                  value: _newMax,
+                  min: _newMin + 1,
+                  activeColor: Colors.blue,
+                  max: 80,
+                  onChanged: (v) {
+                    setState(() {
+                      _newMax = v;
+                      if (_newMax <= _newMin) _newMin = _newMax - 1;
+                    });
+                  },
+                ),
 
-            Center(
-              child: ElevatedButton(
-                onPressed: temp.isLoading
-                    ? null
-                    : () => controller.applyRange(_newMin, _newMax),
-                child: const Text("Guardar rango"),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            Center(
-              child: ElevatedButton.icon(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    temp.autoEnabled ? Colors.red : Colors.green,
+                Center(
+                  child: ElevatedButton(
+                    onPressed: temp.isLoading
+                        ? null
+                        : () => controller.applyRange(_newMin, _newMax),
+                    child: const Text(
+                      "Guardar rango",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-                onPressed: controller.toggleAuto,
-                icon: Icon(
-                  temp.autoEnabled ? Icons.pause_circle : Icons.play_circle,
-                  color: Colors.white,
+                const SizedBox(height: 16),
+
+                Center(
+                  child: ElevatedButton.icon(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        temp.autoEnabled ? Colors.red : Colors.green,
+                      ),
+                    ),
+                    onPressed: controller.toggleAuto,
+                    icon: Icon(
+                      temp.autoEnabled ? Icons.pause_circle : Icons.play_circle,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      temp.autoEnabled
+                          ? "Desactivar sensado"
+                          : "Activar sensado",
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                  ),
                 ),
-                label: Text(
-                  temp.autoEnabled ? "Desactivar sensado" : "Activar sensado",
-                  style: const TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

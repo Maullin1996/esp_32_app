@@ -33,45 +33,49 @@ class _Luces18PageState extends ConsumerState<Luces18Page> {
     final luces = ref.watch(lucesControllerProvider);
     final controller = ref.read(lucesControllerProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.device.name} (${widget.device.ip})"),
-      ),
-      body: luces.espIp.isEmpty
-          ? const Center(child: Text("⛔ No se configuró la IP del ESP32"))
-          : GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-              ),
-              itemCount: AppConstants.relaysCount,
-              itemBuilder: (_, i) {
-                final on = luces.relays[i];
-                return GestureDetector(
-                  onTap: () => controller.toggleRelay(i),
-                  child: Column(
-                    children: [
-                      Icon(
-                        on
-                            ? Icons.lightbulb_circle_rounded
-                            : Icons.lightbulb_circle_outlined,
-                        color: on ? Colors.yellow.shade700 : Colors.grey,
-                        size: 60,
-                      ),
-                      Text(
-                        "Luz ${i + 1}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
+    return SafeArea(
+      top: true,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("${widget.device.name} (${widget.device.ip})"),
+        ),
+        body: luces.espIp.isEmpty
+            ? const Center(child: Text("⛔ No se configuró la IP del ESP32"))
+            : GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemCount: AppConstants.relaysCount,
+                itemBuilder: (_, i) {
+                  final on = luces.relays[i];
+                  return GestureDetector(
+                    onTap: () => controller.toggleRelay(i),
+                    child: Column(
+                      children: [
+                        Icon(
+                          on
+                              ? Icons.lightbulb_circle_rounded
+                              : Icons.lightbulb_circle_outlined,
+                          color: on ? Colors.yellow.shade700 : Colors.grey,
+                          size: 60,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                        Text(
+                          "Luz ${i + 1}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

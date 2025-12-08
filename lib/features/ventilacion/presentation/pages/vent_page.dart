@@ -48,136 +48,147 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
     _newMin = (_newMin == 24) ? vent.rangeMin : _newMin;
     _newMax = (_newMax == 28) ? vent.rangeMax : _newMax;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.device.name} (${widget.device.ip})"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "🌡 Temperatura: ${vent.temperature.toStringAsFixed(1)}°C",
-              style: const TextStyle(fontSize: 22),
-            ),
-            const SizedBox(height: 8),
-
-            Text(
-              "Rango actual: "
-              "${vent.rangeMin.toStringAsFixed(1)}°C – "
-              "${vent.rangeMax.toStringAsFixed(1)}°C",
-            ),
-            Text("Sensado: ${vent.autoEnabled ? "Activado" : "Desactivado"}"),
-
-            Text(
-              "Aire acondicionado: "
-              "${vent.fanOn ? "💨 Encendido" : "⛔ Apagado"}",
-              style: TextStyle(
-                color: vent.fanOn ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            if (vent.error != null)
+    return SafeArea(
+      top: true,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("${widget.device.name} (${widget.device.ip})"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                "Error: ${vent.error}",
-                style: const TextStyle(color: Colors.red),
+                "🌡 Temperatura: ${vent.temperature.toStringAsFixed(1)}°C",
+                style: const TextStyle(fontSize: 22),
+              ),
+              const SizedBox(height: 8),
+
+              Text(
+                "Rango actual: "
+                "${vent.rangeMin.toStringAsFixed(1)}°C – "
+                "${vent.rangeMax.toStringAsFixed(1)}°C",
+              ),
+              Text("Sensado: ${vent.autoEnabled ? "Activado" : "Desactivado"}"),
+
+              Text(
+                "Aire acondicionado: "
+                "${vent.fanOn ? "💨 Encendido" : "⛔ Apagado"}",
+                style: TextStyle(
+                  color: vent.fanOn ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
-            const Divider(height: 32),
+              if (vent.error != null)
+                Text(
+                  "Error: ${vent.error}",
+                  style: const TextStyle(color: Colors.red),
+                ),
 
-            const Text(
-              "Configurar rango de temperatura",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+              const Divider(height: 32),
 
-            const SizedBox(height: 8),
-
-            Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
-            Slider(
-              value: _newMin,
-              min: 10,
-              max: _newMax - 1,
-              onChanged: (v) {
-                setState(() {
-                  _newMin = v;
-                  if (_newMax <= _newMin) _newMax = _newMin + 1;
-                });
-              },
-            ),
-
-            Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
-            Slider(
-              value: _newMax,
-              min: _newMin + 1,
-              max: 50,
-              onChanged: (v) {
-                setState(() {
-                  _newMax = v;
-                  if (_newMax <= _newMin) _newMin = _newMax - 1;
-                });
-              },
-            ),
-
-            Center(
-              child: ElevatedButton(
-                onPressed: () => controller.applyRange(_newMin, _newMax),
-                child: const Text("Guardar rango"),
+              const Text(
+                "Configurar rango de temperatura",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 8),
 
-            Center(
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: vent.autoEnabled ? Colors.red : Colors.green,
-                ),
-                onPressed: controller.toggleAuto,
-                icon: Icon(
-                  vent.autoEnabled ? Icons.pause_circle : Icons.play_circle,
-                  size: 28,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  vent.autoEnabled ? "Desactivar sensado" : "Activar sensado",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newMin,
+                min: 10,
+                max: _newMax - 1,
+                onChanged: (v) {
+                  setState(() {
+                    _newMin = v;
+                    if (_newMax <= _newMin) _newMax = _newMin + 1;
+                  });
+                },
+              ),
+
+              Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newMax,
+                min: _newMin + 1,
+                max: 50,
+                onChanged: (v) {
+                  setState(() {
+                    _newMax = v;
+                    if (_newMax <= _newMin) _newMin = _newMax - 1;
+                  });
+                },
+              ),
+
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => controller.applyRange(_newMin, _newMax),
+                  child: const Text(
+                    "Guardar rango",
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-            if (!vent.autoEnabled)
               Center(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: vent.fanOn ? Colors.orange : Colors.blue,
+                    backgroundColor: vent.autoEnabled
+                        ? Colors.red
+                        : Colors.green,
                   ),
-                  onPressed: controller.toggleFanManual,
+                  onPressed: controller.toggleAuto,
                   icon: Icon(
-                    vent.fanOn ? Icons.power_settings_new : Icons.ac_unit,
-                    size: 26,
+                    vent.autoEnabled ? Icons.pause_circle : Icons.play_circle,
+                    size: 28,
                     color: Colors.white,
                   ),
                   label: Text(
-                    vent.fanOn
-                        ? "Apagar aire acondicionado"
-                        : "Encender aire acondicionado",
+                    vent.autoEnabled ? "Desactivar sensado" : "Activar sensado",
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
-          ],
+
+              const SizedBox(height: 16),
+
+              if (!vent.autoEnabled)
+                Center(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: vent.fanOn ? Colors.orange : Colors.blue,
+                    ),
+                    onPressed: controller.toggleFanManual,
+                    icon: Icon(
+                      vent.fanOn ? Icons.power_settings_new : Icons.ac_unit,
+                      size: 26,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      vent.fanOn
+                          ? "Apagar aire acondicionado"
+                          : "Encender aire acondicionado",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

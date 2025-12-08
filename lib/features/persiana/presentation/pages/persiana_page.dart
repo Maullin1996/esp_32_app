@@ -69,231 +69,240 @@ class _PersianaPageState extends ConsumerState<PersianaPage> {
 
     final isAuto = state.autoEnabled;
 
-    return Scaffold(
-      appBar: AppBar(title: Text("Persiana (ESP: ${state.espIp})")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ----- ESTADO -----
-            Text(
-              "🌡 Temperatura: ${state.temperature.toStringAsFixed(1)} °C",
-              style: const TextStyle(fontSize: 22),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Modo: ${isAuto ? "Automático" : "Manual"}",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isAuto ? Colors.blue : Colors.grey[800],
+    return SafeArea(
+      bottom: true,
+      right: true,
+      child: Scaffold(
+        appBar: AppBar(title: Text("Persiana (ESP: ${state.espIp})")),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ----- ESTADO -----
+              Text(
+                "🌡 Temperatura: ${state.temperature.toStringAsFixed(1)} °C",
+                style: const TextStyle(fontSize: 22),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Text("Motor: "),
-                Text(
-                  state.motorState,
-                  style: TextStyle(
-                    color: _statusColor(state.motorState),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            Text("Última acción: ${state.lastAction}"),
-            if (state.error != null) ...[
               const SizedBox(height: 8),
               Text(
-                "Error: ${state.error}",
-                style: const TextStyle(color: Colors.red),
-              ),
-            ],
-
-            const Divider(height: 32),
-
-            // ----- RANGO AUTO -----
-            const Text(
-              "Rango de temperatura (modo AUTO)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text("Mínimo: ${_newMin.toStringAsFixed(1)} °C"),
-            Slider(
-              value: _newMin,
-              min: 10,
-              max: _newMax - 1,
-              onChanged: (v) {
-                setState(() {
-                  _newMin = v;
-                  if (_newMax <= _newMin) {
-                    _newMax = _newMin + 1;
-                  }
-                });
-              },
-            ),
-            Text("Máximo: ${_newMax.toStringAsFixed(1)} °C"),
-            Slider(
-              value: _newMax,
-              min: _newMin + 1,
-              max: 50,
-              onChanged: (v) {
-                setState(() {
-                  _newMax = v;
-                  if (_newMax <= _newMin) {
-                    _newMin = _newMax - 1;
-                  }
-                });
-              },
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () => controller.applyRange(_newMin, _newMax),
-                child: const Text(
-                  "Guardar rango",
-                  style: TextStyle(color: Colors.white),
+                "Modo: ${isAuto ? "Automático" : "Manual"}",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isAuto ? Colors.blue : Colors.grey[800],
                 ),
               ),
-            ),
-
-            const Divider(height: 32),
-
-            // ----- PWM -----
-            const Text(
-              "Velocidad (PWM)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "PWM: ${_newPwm.toInt()} (aprox. ${(100 * _newPwm / 255).toStringAsFixed(0)}%)",
-            ),
-            Slider(
-              value: _newPwm,
-              min: 0,
-              max: 255,
-              onChanged: (v) {
-                setState(() {
-                  _newPwm = v;
-                });
-              },
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () => controller.applyPwm(_newPwm.toInt()),
-                child: const Text(
-                  "Guardar PWM",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-
-            const Divider(height: 32),
-
-            // ----- TIEMPOS AUTO -----
-            const Text(
-              "Tiempos en AUTO (ms)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text("Tiempo abrir: ${_newTimeOpen.toInt()} ms"),
-            Slider(
-              value: _newTimeOpen,
-              min: 200,
-              max: 20000,
-              onChanged: (v) {
-                setState(() {
-                  _newTimeOpen = v;
-                });
-              },
-            ),
-            Text("Tiempo cerrar: ${_newTimeClose.toInt()} ms"),
-            Slider(
-              value: _newTimeClose,
-              min: 200,
-              max: 20000,
-              onChanged: (v) {
-                setState(() {
-                  _newTimeClose = v;
-                });
-              },
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () => controller.applyTiming(
-                  _newTimeOpen.toInt(),
-                  _newTimeClose.toInt(),
-                ),
-                child: const Text(
-                  "Guardar tiempos",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ----- BOTÓN AUTO ON/OFF -----
-            Center(
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isAuto ? Colors.red : Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 10,
-                  ),
-                ),
-                onPressed: controller.toggleAuto,
-                icon: Icon(
-                  isAuto ? Icons.pause_circle : Icons.play_circle,
-                  size: 28,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  isAuto ? "Desactivar automático" : "Activar automático",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ----- CONTROLES MANUALES (solo cuando auto OFF) -----
-            if (!isAuto) ...[
-              const Text(
-                "Control manual (mantén presionado)",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 4),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _pressHoldButton(
-                    context: context,
-                    label: "Abrir",
-                    color: Colors.blue,
-                    icon: Icons.arrow_upward,
-                    onDown: () => controller.startManualOpen(),
-                    onUp: () => controller.stopManual(),
-                  ),
-                  _pressHoldButton(
-                    context: context,
-                    label: "Cerrar",
-                    color: Colors.orange,
-                    icon: Icons.arrow_downward,
-                    onDown: () => controller.startManualClose(),
-                    onUp: () => controller.stopManual(),
+                  const Text("Motor: "),
+                  Text(
+                    state.motorState,
+                    style: TextStyle(
+                      color: _statusColor(state.motorState),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
+              Text("Última acción: ${state.lastAction}"),
+              if (state.error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  "Error: ${state.error}",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+
+              const Divider(height: 32),
+
+              // ----- RANGO AUTO -----
+              const Text(
+                "Rango de temperatura (modo AUTO)",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text("Mínimo: ${_newMin.toStringAsFixed(1)} °C"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newMin,
+                min: 10,
+                max: _newMax - 1,
+                onChanged: (v) {
+                  setState(() {
+                    _newMin = v;
+                    if (_newMax <= _newMin) {
+                      _newMax = _newMin + 1;
+                    }
+                  });
+                },
+              ),
+              Text("Máximo: ${_newMax.toStringAsFixed(1)} °C"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newMax,
+                min: _newMin + 1,
+                max: 50,
+                onChanged: (v) {
+                  setState(() {
+                    _newMax = v;
+                    if (_newMax <= _newMin) {
+                      _newMin = _newMax - 1;
+                    }
+                  });
+                },
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => controller.applyRange(_newMin, _newMax),
+                  child: const Text(
+                    "Guardar rango",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+
+              const Divider(height: 32),
+
+              // ----- PWM -----
+              const Text(
+                "Velocidad (PWM)",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "PWM: ${_newPwm.toInt()} (aprox. ${(100 * _newPwm / 255).toStringAsFixed(0)}%)",
+              ),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newPwm,
+                min: 0,
+                max: 255,
+                onChanged: (v) {
+                  setState(() {
+                    _newPwm = v;
+                  });
+                },
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => controller.applyPwm(_newPwm.toInt()),
+                  child: const Text(
+                    "Guardar PWM",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+
+              const Divider(height: 32),
+
+              // ----- TIEMPOS AUTO -----
+              const Text(
+                "Tiempos en AUTO (ms)",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text("Tiempo abrir: ${_newTimeOpen.toInt()} ms"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newTimeOpen,
+                min: 200,
+                max: 20000,
+                onChanged: (v) {
+                  setState(() {
+                    _newTimeOpen = v;
+                  });
+                },
+              ),
+              Text("Tiempo cerrar: ${_newTimeClose.toInt()} ms"),
+              Slider(
+                activeColor: Colors.blue,
+                value: _newTimeClose,
+                min: 200,
+                max: 20000,
+                onChanged: (v) {
+                  setState(() {
+                    _newTimeClose = v;
+                  });
+                },
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => controller.applyTiming(
+                    _newTimeOpen.toInt(),
+                    _newTimeClose.toInt(),
+                  ),
+                  child: const Text(
+                    "Guardar tiempos",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ----- BOTÓN AUTO ON/OFF -----
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isAuto ? Colors.red : Colors.green,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                  ),
+                  onPressed: controller.toggleAuto,
+                  icon: Icon(
+                    isAuto ? Icons.pause_circle : Icons.play_circle,
+                    size: 28,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    isAuto ? "Desactivar automático" : "Activar automático",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ----- CONTROLES MANUALES (solo cuando auto OFF) -----
+              if (!isAuto) ...[
+                const Text(
+                  "Control manual (mantén presionado)",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _pressHoldButton(
+                      context: context,
+                      label: "Abrir",
+                      color: Colors.blue,
+                      icon: Icons.arrow_upward,
+                      onDown: () => controller.startManualOpen(),
+                      onUp: () => controller.stopManual(),
+                    ),
+                    _pressHoldButton(
+                      context: context,
+                      label: "Cerrar",
+                      color: Colors.orange,
+                      icon: Icons.arrow_downward,
+                      onDown: () => controller.startManualClose(),
+                      onUp: () => controller.stopManual(),
+                    ),
+                  ],
+                ),
+              ],
+              SizedBox(height: 20),
             ],
-            SizedBox(height: 20),
-          ],
+          ),
         ),
       ),
     );
