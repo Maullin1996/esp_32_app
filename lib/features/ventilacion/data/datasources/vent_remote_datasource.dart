@@ -19,6 +19,7 @@ class VentRemoteDatasource {
 
   Future<http.Response> autoOff(String ip) => client.post(_u(ip, "/auto_off"));
 
-  Future<http.Response> fanManual(String ip, bool on) =>
-      client.post(_u(ip, "/fan_manual", {"state": on ? "1" : "0"}));
+  Future<http.Response> fanManual(String ip, int id, bool on) => client.post(
+    _u(ip, "/fan_manual", {"id": id.toString(), "state": on ? "1" : "0"}),
+  );
 }

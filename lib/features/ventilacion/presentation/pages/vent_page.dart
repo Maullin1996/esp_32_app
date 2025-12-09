@@ -1,10 +1,13 @@
 import 'package:esp32_app/features/devices/domain/entities/device_entity.dart';
-import 'package:esp32_app/features/ventilacion/presentation/providers/vent_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/vent_providers.dart';
+import '../controllers/vent_controller.dart';
+
 class VentilacionPage extends ConsumerStatefulWidget {
   final DeviceEntity device;
+
   const VentilacionPage({super.key, required this.device});
 
   @override
@@ -25,8 +28,6 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
 
       Future(() {
         if (!mounted) return;
-
-        // ❤️ SOLO USAR EL DEVICE.NAME Y DEVICE.IP
         ref.read(ventControllerProvider.notifier).setIp(widget.device.ip);
       });
     }
@@ -37,61 +38,75 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
     final vent = ref.watch(ventControllerProvider);
     final controller = ref.read(ventControllerProvider.notifier);
 
-    // ❌ YA NO USAMOS assignedDevicesProvider
     if (vent.espIp.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("⛔ No hay ESP32 configurado")),
       );
     }
 
-    // Inicializar sliders una vez
-    _newMin = (_newMin == 24) ? vent.rangeMin : _newMin;
-    _newMax = (_newMax == 28) ? vent.rangeMax : _newMax;
+    if (_newMin == 24) _newMin = vent.rangeMin;
+    if (_newMax == 28) _newMax = vent.rangeMax;
 
     return SafeArea(
-      top: true,
-      bottom: true,
       child: Scaffold(
         appBar: AppBar(
           title: Text("${widget.device.name} (${widget.device.ip})"),
         ),
+
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "🌡 Temperatura: ${vent.temperature.toStringAsFixed(1)}°C",
-                style: const TextStyle(fontSize: 22),
+              const Text(
+                "🌡 Sensores de Temperatura",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
-              Text(
-                "Rango actual: "
-                "${vent.rangeMin.toStringAsFixed(1)}°C – "
-                "${vent.rangeMax.toStringAsFixed(1)}°C",
-              ),
-              Text("Sensado: ${vent.autoEnabled ? "Activado" : "Desactivado"}"),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: vent.temps.length,
+                  itemBuilder: (_, i) {
+                    final temp = vent.temps[i];
+                    final fanOn = vent.fans[i];
+                    final name = (i < vent.names.length)
+                        ? vent.names[i]
+                        : "Sensor ${i + 1}";
 
-              Text(
-                "Aire acondicionado: "
-                "${vent.fanOn ? "💨 Encendido" : "⛔ Apagado"}",
-                style: TextStyle(
-                  color: vent.fanOn ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
+                    return Card(
+                      child: ListTile(
+                        title: Text(name),
+                        subtitle: Text(
+                          "Temperatura: ${temp.toStringAsFixed(1)} °C\n"
+                          "Ventilador: ${fanOn ? "Encendido" : "Apagado"}",
+                        ),
+
+                        onLongPress: () =>
+                            _showRenameDialog(context, controller, i, name),
+
+                        trailing: vent.autoEnabled
+                            ? const Text(
+                                "AUTO",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              )
+                            : Switch(
+                                value: fanOn,
+                                onChanged: (_) => controller.toggleFanManual(i),
+                              ),
+                      ),
+                    );
+                  },
                 ),
               ),
-
-              if (vent.error != null)
-                Text(
-                  "Error: ${vent.error}",
-                  style: const TextStyle(color: Colors.red),
-                ),
 
               const Divider(height: 32),
 
               const Text(
-                "Configurar rango de temperatura",
+                "Configurar rango de temperatura global",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
 
@@ -99,28 +114,24 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
 
               Text("Mínimo: ${_newMin.toStringAsFixed(1)}°C"),
               Slider(
-                activeColor: Colors.blue,
                 value: _newMin,
                 min: 10,
                 max: _newMax - 1,
                 onChanged: (v) {
                   setState(() {
                     _newMin = v;
-                    if (_newMax <= _newMin) _newMax = _newMin + 1;
                   });
                 },
               ),
 
               Text("Máximo: ${_newMax.toStringAsFixed(1)}°C"),
               Slider(
-                activeColor: Colors.blue,
                 value: _newMax,
                 min: _newMin + 1,
                 max: 50,
                 onChanged: (v) {
                   setState(() {
                     _newMax = v;
-                    if (_newMax <= _newMin) _newMin = _newMax - 1;
                   });
                 },
               ),
@@ -128,14 +139,11 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
               Center(
                 child: ElevatedButton(
                   onPressed: () => controller.applyRange(_newMin, _newMax),
-                  child: const Text(
-                    "Guardar rango",
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text("Guardar rango"),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               Center(
                 child: ElevatedButton.icon(
@@ -147,49 +155,63 @@ class _VentilacionPageState extends ConsumerState<VentilacionPage> {
                   onPressed: controller.toggleAuto,
                   icon: Icon(
                     vent.autoEnabled ? Icons.pause_circle : Icons.play_circle,
-                    size: 28,
                     color: Colors.white,
                   ),
                   label: Text(
-                    vent.autoEnabled ? "Desactivar sensado" : "Activar sensado",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    vent.autoEnabled
+                        ? "Desactivar automático"
+                        : "Activar automático",
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
-
-              if (!vent.autoEnabled)
-                Center(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: vent.fanOn ? Colors.orange : Colors.blue,
-                    ),
-                    onPressed: controller.toggleFanManual,
-                    icon: Icon(
-                      vent.fanOn ? Icons.power_settings_new : Icons.ac_unit,
-                      size: 26,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      vent.fanOn
-                          ? "Apagar aire acondicionado"
-                          : "Encender aire acondicionado",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+              if (vent.error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  "Error: ${vent.error}",
+                  style: const TextStyle(color: Colors.red),
                 ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showRenameDialog(
+    BuildContext context,
+    VentController controller,
+    int index,
+    String currentName,
+  ) {
+    final ctrl = TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Renombrar sensor"),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(
+            labelText: "Nombre",
+            hintText: "Ej: Habitación, Cocina...",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              controller.renameSensor(index, ctrl.text);
+              Navigator.pop(context);
+            },
+            child: const Text("Guardar"),
+          ),
+        ],
       ),
     );
   }

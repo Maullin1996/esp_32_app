@@ -16,13 +16,19 @@ class VentRepositoryImpl implements VentRepository {
 
       final json = jsonDecode(r.body);
 
+      final tempsJson = (json["temps"] as List?) ?? [];
+      final fansJson = (json["fans"] as List?) ?? [];
+
+      final temps = tempsJson.map((e) => (e as num).toDouble()).toList();
+      final fans = fansJson.map((e) => (e as num) == 1).toList();
+
       return Success(
         VentState(
           espIp: ip,
-          temperature: (json["temperature"] ?? 0).toDouble(),
+          temps: temps,
           rangeMin: (json["range_min"] ?? 24).toDouble(),
           rangeMax: (json["range_max"] ?? 28).toDouble(),
-          fanOn: json["fan"] == 1,
+          fans: fans,
           autoEnabled: json["auto"] == 1,
         ),
       );
@@ -59,11 +65,12 @@ class VentRepositoryImpl implements VentRepository {
   }
 
   @override
-  Future<Result<void>> setFanManual(String ip, bool on) async {
+  Future<Result<void>> setFanManual(String ip, int id, bool on) async {
     try {
       final r = await remote
-          .fanManual(ip, on)
+          .fanManual(ip, id, on)
           .timeout(const Duration(seconds: 2));
+
       return r.statusCode == 200
           ? const Success(null)
           : Failure("HTTP ${r.statusCode}");

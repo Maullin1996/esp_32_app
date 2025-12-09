@@ -5,5 +5,6 @@ class SetVentFanManualUsecase {
   final VentRepository repo;
   SetVentFanManualUsecase(this.repo);
 
-  Future<Result<void>> call(String ip, bool on) => repo.setFanManual(ip, on);
+  Future<Result<void>> call(String ip, int id, bool on) =>
+      repo.setFanManual(ip, id, on);
 }

@@ -15,23 +15,17 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-VentState _$VentStateFromJson(Map<String, dynamic> json) {
-  return _VentState.fromJson(json);
-}
-
 /// @nodoc
 mixin _$VentState {
   String get espIp => throw _privateConstructorUsedError;
-  double get temperature => throw _privateConstructorUsedError;
+  List<double> get temps => throw _privateConstructorUsedError;
+  List<bool> get fans => throw _privateConstructorUsedError;
+  List<String> get names => throw _privateConstructorUsedError; // ← NOMBRES
   double get rangeMin => throw _privateConstructorUsedError;
   double get rangeMax => throw _privateConstructorUsedError;
-  bool get fanOn => throw _privateConstructorUsedError;
   bool get autoEnabled => throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
-
-  /// Serializes this VentState to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of VentState
   /// with the given fields replaced by the non-null parameter values.
@@ -47,10 +41,11 @@ abstract class $VentStateCopyWith<$Res> {
   @useResult
   $Res call({
     String espIp,
-    double temperature,
+    List<double> temps,
+    List<bool> fans,
+    List<String> names,
     double rangeMin,
     double rangeMax,
-    bool fanOn,
     bool autoEnabled,
     bool isLoading,
     String? error,
@@ -73,10 +68,11 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
   @override
   $Res call({
     Object? espIp = null,
-    Object? temperature = null,
+    Object? temps = null,
+    Object? fans = null,
+    Object? names = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
-    Object? fanOn = null,
     Object? autoEnabled = null,
     Object? isLoading = null,
     Object? error = freezed,
@@ -87,10 +83,18 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
                 ? _value.espIp
                 : espIp // ignore: cast_nullable_to_non_nullable
                       as String,
-            temperature: null == temperature
-                ? _value.temperature
-                : temperature // ignore: cast_nullable_to_non_nullable
-                      as double,
+            temps: null == temps
+                ? _value.temps
+                : temps // ignore: cast_nullable_to_non_nullable
+                      as List<double>,
+            fans: null == fans
+                ? _value.fans
+                : fans // ignore: cast_nullable_to_non_nullable
+                      as List<bool>,
+            names: null == names
+                ? _value.names
+                : names // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
             rangeMin: null == rangeMin
                 ? _value.rangeMin
                 : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -99,10 +103,6 @@ class _$VentStateCopyWithImpl<$Res, $Val extends VentState>
                 ? _value.rangeMax
                 : rangeMax // ignore: cast_nullable_to_non_nullable
                       as double,
-            fanOn: null == fanOn
-                ? _value.fanOn
-                : fanOn // ignore: cast_nullable_to_non_nullable
-                      as bool,
             autoEnabled: null == autoEnabled
                 ? _value.autoEnabled
                 : autoEnabled // ignore: cast_nullable_to_non_nullable
@@ -132,10 +132,11 @@ abstract class _$$VentStateImplCopyWith<$Res>
   @useResult
   $Res call({
     String espIp,
-    double temperature,
+    List<double> temps,
+    List<bool> fans,
+    List<String> names,
     double rangeMin,
     double rangeMax,
-    bool fanOn,
     bool autoEnabled,
     bool isLoading,
     String? error,
@@ -157,10 +158,11 @@ class __$$VentStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? espIp = null,
-    Object? temperature = null,
+    Object? temps = null,
+    Object? fans = null,
+    Object? names = null,
     Object? rangeMin = null,
     Object? rangeMax = null,
-    Object? fanOn = null,
     Object? autoEnabled = null,
     Object? isLoading = null,
     Object? error = freezed,
@@ -171,10 +173,18 @@ class __$$VentStateImplCopyWithImpl<$Res>
             ? _value.espIp
             : espIp // ignore: cast_nullable_to_non_nullable
                   as String,
-        temperature: null == temperature
-            ? _value.temperature
-            : temperature // ignore: cast_nullable_to_non_nullable
-                  as double,
+        temps: null == temps
+            ? _value._temps
+            : temps // ignore: cast_nullable_to_non_nullable
+                  as List<double>,
+        fans: null == fans
+            ? _value._fans
+            : fans // ignore: cast_nullable_to_non_nullable
+                  as List<bool>,
+        names: null == names
+            ? _value._names
+            : names // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
         rangeMin: null == rangeMin
             ? _value.rangeMin
             : rangeMin // ignore: cast_nullable_to_non_nullable
@@ -183,10 +193,6 @@ class __$$VentStateImplCopyWithImpl<$Res>
             ? _value.rangeMax
             : rangeMax // ignore: cast_nullable_to_non_nullable
                   as double,
-        fanOn: null == fanOn
-            ? _value.fanOn
-            : fanOn // ignore: cast_nullable_to_non_nullable
-                  as bool,
         autoEnabled: null == autoEnabled
             ? _value.autoEnabled
             : autoEnabled // ignore: cast_nullable_to_non_nullable
@@ -205,37 +211,59 @@ class __$$VentStateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$VentStateImpl implements _VentState {
   const _$VentStateImpl({
     this.espIp = '',
-    this.temperature = 0.0,
+    final List<double> temps = const <double>[],
+    final List<bool> fans = const <bool>[],
+    final List<String> names = const <String>[],
     this.rangeMin = 24.0,
     this.rangeMax = 28.0,
-    this.fanOn = false,
     this.autoEnabled = false,
     this.isLoading = false,
     this.error,
-  });
-
-  factory _$VentStateImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VentStateImplFromJson(json);
+  }) : _temps = temps,
+       _fans = fans,
+       _names = names;
 
   @override
   @JsonKey()
   final String espIp;
+  final List<double> _temps;
   @override
   @JsonKey()
-  final double temperature;
+  List<double> get temps {
+    if (_temps is EqualUnmodifiableListView) return _temps;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_temps);
+  }
+
+  final List<bool> _fans;
+  @override
+  @JsonKey()
+  List<bool> get fans {
+    if (_fans is EqualUnmodifiableListView) return _fans;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_fans);
+  }
+
+  final List<String> _names;
+  @override
+  @JsonKey()
+  List<String> get names {
+    if (_names is EqualUnmodifiableListView) return _names;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_names);
+  }
+
+  // ← NOMBRES
   @override
   @JsonKey()
   final double rangeMin;
   @override
   @JsonKey()
   final double rangeMax;
-  @override
-  @JsonKey()
-  final bool fanOn;
   @override
   @JsonKey()
   final bool autoEnabled;
@@ -247,7 +275,7 @@ class _$VentStateImpl implements _VentState {
 
   @override
   String toString() {
-    return 'VentState(espIp: $espIp, temperature: $temperature, rangeMin: $rangeMin, rangeMax: $rangeMax, fanOn: $fanOn, autoEnabled: $autoEnabled, isLoading: $isLoading, error: $error)';
+    return 'VentState(espIp: $espIp, temps: $temps, fans: $fans, names: $names, rangeMin: $rangeMin, rangeMax: $rangeMax, autoEnabled: $autoEnabled, isLoading: $isLoading, error: $error)';
   }
 
   @override
@@ -256,13 +284,13 @@ class _$VentStateImpl implements _VentState {
         (other.runtimeType == runtimeType &&
             other is _$VentStateImpl &&
             (identical(other.espIp, espIp) || other.espIp == espIp) &&
-            (identical(other.temperature, temperature) ||
-                other.temperature == temperature) &&
+            const DeepCollectionEquality().equals(other._temps, _temps) &&
+            const DeepCollectionEquality().equals(other._fans, _fans) &&
+            const DeepCollectionEquality().equals(other._names, _names) &&
             (identical(other.rangeMin, rangeMin) ||
                 other.rangeMin == rangeMin) &&
             (identical(other.rangeMax, rangeMax) ||
                 other.rangeMax == rangeMax) &&
-            (identical(other.fanOn, fanOn) || other.fanOn == fanOn) &&
             (identical(other.autoEnabled, autoEnabled) ||
                 other.autoEnabled == autoEnabled) &&
             (identical(other.isLoading, isLoading) ||
@@ -270,15 +298,15 @@ class _$VentStateImpl implements _VentState {
             (identical(other.error, error) || other.error == error));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
     espIp,
-    temperature,
+    const DeepCollectionEquality().hash(_temps),
+    const DeepCollectionEquality().hash(_fans),
+    const DeepCollectionEquality().hash(_names),
     rangeMin,
     rangeMax,
-    fanOn,
     autoEnabled,
     isLoading,
     error,
@@ -291,38 +319,33 @@ class _$VentStateImpl implements _VentState {
   @pragma('vm:prefer-inline')
   _$$VentStateImplCopyWith<_$VentStateImpl> get copyWith =>
       __$$VentStateImplCopyWithImpl<_$VentStateImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VentStateImplToJson(this);
-  }
 }
 
 abstract class _VentState implements VentState {
   const factory _VentState({
     final String espIp,
-    final double temperature,
+    final List<double> temps,
+    final List<bool> fans,
+    final List<String> names,
     final double rangeMin,
     final double rangeMax,
-    final bool fanOn,
     final bool autoEnabled,
     final bool isLoading,
     final String? error,
   }) = _$VentStateImpl;
 
-  factory _VentState.fromJson(Map<String, dynamic> json) =
-      _$VentStateImpl.fromJson;
-
   @override
   String get espIp;
   @override
-  double get temperature;
+  List<double> get temps;
+  @override
+  List<bool> get fans;
+  @override
+  List<String> get names; // ← NOMBRES
   @override
   double get rangeMin;
   @override
   double get rangeMax;
-  @override
-  bool get fanOn;
   @override
   bool get autoEnabled;
   @override
